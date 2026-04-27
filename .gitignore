@@ -1,0 +1,15 @@
+# ビルド成果物
+/tmux-agent-log
+/dist/
+
+# Go
+*.test
+*.out
+coverage.out
+coverage.html
+
+# エディタ / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
