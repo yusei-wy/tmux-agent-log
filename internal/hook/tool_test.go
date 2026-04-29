@@ -1,0 +1,33 @@
+package hook
+
+import (
+	"bytes"
+	"path/filepath"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/yusei-wy/tmux-agent-log/internal/config"
+	"github.com/yusei-wy/tmux-agent-log/internal/storage"
+)
+
+func TestToolPreAndPostAppendEvents(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
+	cwd := setupGitRepo(t)
+	require.NoError(t, RunSessionStart(bytes.NewBufferString(`{"session_id":"s1","cwd":"`+cwd+`"}`)))
+	require.NoError(t, RunTurnStart(bytes.NewBufferString(`{"session_id":"s1","cwd":"`+cwd+`","prompt":"p"}`)))
+
+	sDir, _ := config.SessionDir(cwd, "s1")
+	turns, _ := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
+	turnID := turns[0].ID
+
+	require.NoError(t, RunToolPre(bytes.NewBufferString(
+		`{"session_id":"s1","cwd":"`+cwd+`","turn_id":"`+turnID+`","tool_name":"Read","tool_input":{"file_path":"/a"}}`)))
+	require.NoError(t, RunToolPost(bytes.NewBufferString(
+		`{"session_id":"s1","cwd":"`+cwd+`","turn_id":"`+turnID+`","tool_name":"Read","tool_response":{"success":true}}`)))
+
+	events, _ := storage.ReadEvents(filepath.Join(sDir, "events.jsonl"), turnID)
+	require.Len(t, events, 2)
+	require.Equal(t, "pre", events[0].Phase)
+	require.Equal(t, "post", events[1].Phase)
+	require.True(t, events[1].Success)
+}
