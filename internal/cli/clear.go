@@ -84,12 +84,13 @@ func clearCmd() *cobra.Command {
 					if err != nil {
 						continue
 					}
-					if st.ModTime().Before(cutoff) {
-						if err := os.RemoveAll(full); err != nil {
-							return err
-						}
-						fmt.Fprintln(cmd.OutOrStdout(), "removed", full)
+					if !st.ModTime().Before(cutoff) {
+						continue
 					}
+					if err := os.RemoveAll(full); err != nil {
+						return err
+					}
+					fmt.Fprintln(cmd.OutOrStdout(), "removed", full)
 				}
 			}
 			return nil

@@ -3,7 +3,6 @@ package hook
 import (
 	"io"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,14 +56,3 @@ func RunTurnStart(stdin io.Reader) error {
 	return storage.AppendTurnOpen(filepath.Join(sDir, "turns.jsonl"), turn)
 }
 
-func previewFirstLines(s string, maxLen int) string {
-	parts := strings.SplitN(s, "\n", 3)
-	if len(parts) > 2 {
-		parts = parts[:2]
-	}
-	out := strings.Join(parts, "\n")
-	if len(out) > maxLen {
-		out = out[:maxLen] + "…"
-	}
-	return out
-}

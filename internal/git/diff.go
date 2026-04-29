@@ -7,7 +7,10 @@ func DiffSince(dir, base string) (string, error) {
 		base = emptyTreeHash
 	}
 	// NOTE: 未追跡ファイルを diff に載せるため intent-to-add で擬似的にステージする。
-	// 実際のオブジェクトは追加されないので user の作業ツリーは変えない。
-	_, _ = Run(dir, "add", "-N", "--", ".")
+	// 大きなリポジトリで `git add -N -- .` の stat ウォーク代を避けるため、
+	// untracked が存在するときだけ実行する。
+	if untracked, err := Run(dir, "ls-files", "--others", "--exclude-standard"); err == nil && untracked != "" {
+		_, _ = Run(dir, "add", "-N", "--", ".")
+	}
 	return Run(dir, "diff", "--no-color", "-U3", base, "--")
 }

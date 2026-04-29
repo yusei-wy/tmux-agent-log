@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -138,8 +139,8 @@ func listCommentsCmd() *cobra.Command {
 				rows = append(rows, []string{
 					c.ID,
 					c.File,
-					itoa(c.LineStart),
-					itoa(c.LineEnd),
+					strconv.Itoa(c.LineStart),
+					strconv.Itoa(c.LineEnd),
 					c.Text,
 					formatTime(c.SentAt),
 				})
@@ -154,6 +155,3 @@ func listCommentsCmd() *cobra.Command {
 	return cmd
 }
 
-func itoa(n int) string {
-	return formatInt(n)
-}

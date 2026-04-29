@@ -25,11 +25,11 @@ type toolHookInput struct {
 }
 
 func RunToolPre(stdin io.Reader) error {
-	return runToolHook(stdin, "pre")
+	return runToolHook(stdin, storage.EventPhasePre)
 }
 
 func RunToolPost(stdin io.Reader) error {
-	return runToolHook(stdin, "post")
+	return runToolHook(stdin, storage.EventPhasePos)
 }
 
 func runToolHook(stdin io.Reader, phase string) error {
@@ -48,16 +48,11 @@ func runToolHook(stdin io.Reader, phase string) error {
 
 	turnID := in.TurnID
 	if turnID == "" {
-		turns, err := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
+		latest, err := storage.LatestOpenTurnID(filepath.Join(sDir, "turns.jsonl"))
 		if err != nil {
 			return err
 		}
-		for i := len(turns) - 1; i >= 0; i-- {
-			if turns[i].Status == "open" {
-				turnID = turns[i].ID
-				break
-			}
-		}
+		turnID = latest
 	}
 	if turnID == "" {
 		return nil
@@ -68,10 +63,10 @@ func runToolHook(stdin io.Reader, phase string) error {
 		TurnID:      turnID,
 		Ts:          time.Now().UTC(),
 		Tool:        in.ToolName,
-		ArgsPreview: previewBytes(in.ToolInput, 200),
+		ArgsPreview: truncate(string(in.ToolInput), 200),
 		Phase:       phase,
 	}
-	if phase == "post" {
+	if phase == storage.EventPhasePos {
 		event.Success = in.ToolResponse.Success
 		event.ErrorMessage = in.ToolResponse.Error
 	}
@@ -79,10 +74,3 @@ func runToolHook(stdin io.Reader, phase string) error {
 	return storage.AppendEvent(filepath.Join(sDir, "events.jsonl"), event)
 }
 
-func previewBytes(raw []byte, maxLen int) string {
-	s := string(raw)
-	if len(s) > maxLen {
-		s = s[:maxLen] + "…"
-	}
-	return s
-}

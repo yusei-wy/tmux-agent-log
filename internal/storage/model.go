@@ -2,6 +2,17 @@ package storage
 
 import "time"
 
+const (
+	PhaseOpen     = "open"
+	PhaseClose    = "close"
+	EventPhasePre = "pre"
+	EventPhasePos = "post"
+
+	StatusOpen  = "open"
+	StatusDone  = "done"
+	StatusError = "error"
+)
+
 type SessionMeta struct {
 	ClaudeSessionID string    `json:"claude_session_id"`
 	TmuxPane        string    `json:"tmux_pane,omitempty"`

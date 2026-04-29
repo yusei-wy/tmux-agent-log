@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -139,7 +140,7 @@ func showDiffCmd() *cobra.Command {
 	return cmd
 }
 
-func writeJSONIndent(w interface{ Write([]byte) (int, error) }, v any) error {
+func writeJSONIndent(w io.Writer, v any) error {
 	body, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		return err
