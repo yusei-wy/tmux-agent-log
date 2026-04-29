@@ -13,8 +13,8 @@ func LatestOpenTurnID(path string) (string, error) {
 
 	err := ReadJSONL(path, func(raw []byte) error {
 		var head struct {
-			ID    string `json:"id"`
-			Phase string `json:"phase"`
+			ID    string    `json:"id"`
+			Phase TurnPhase `json:"phase"`
 		}
 		if err := json.Unmarshal(raw, &head); err != nil {
 			return nil
@@ -23,9 +23,9 @@ func LatestOpenTurnID(path string) (string, error) {
 			return nil
 		}
 		switch head.Phase {
-		case PhaseOpen:
+		case TurnPhaseOpen:
 			open = append(open, head.ID)
-		case PhaseClose:
+		case TurnPhaseClose:
 			closed[head.ID] = true
 		}
 		return nil

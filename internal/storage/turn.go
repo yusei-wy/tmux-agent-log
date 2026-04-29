@@ -6,12 +6,12 @@ import (
 )
 
 func AppendTurnOpen(path string, t TurnOpen) error {
-	t.Phase = PhaseOpen
+	t.Phase = TurnPhaseOpen
 	return AppendJSONL(path, t)
 }
 
 func AppendTurnClose(path string, t TurnClose) error {
-	t.Phase = PhaseClose
+	t.Phase = TurnPhaseClose
 	return AppendJSONL(path, t)
 }
 
@@ -20,8 +20,8 @@ func ReadTurns(path string) ([]Turn, error) {
 
 	err := ReadJSONL(path, func(raw []byte) error {
 		var head struct {
-			ID    string `json:"id"`
-			Phase string `json:"phase"`
+			ID    string    `json:"id"`
+			Phase TurnPhase `json:"phase"`
 		}
 		if err := json.Unmarshal(raw, &head); err != nil {
 			return nil
@@ -31,28 +31,28 @@ func ReadTurns(path string) ([]Turn, error) {
 		}
 
 		switch head.Phase {
-		case PhaseOpen:
+		case TurnPhaseOpen:
 			var o TurnOpen
 			if err := json.Unmarshal(raw, &o); err != nil {
 				return nil
 			}
 			t, ok := turns[o.ID]
 			if !ok {
-				t = &Turn{ID: o.ID, Status: StatusOpen}
+				t = &Turn{ID: o.ID, Status: TurnStatusOpen}
 				turns[o.ID] = t
 			}
 			t.StartedAt = o.StartedAt
 			t.UserPromptPreview = o.UserPromptPreview
 			t.HeadSHAPre = o.HeadSHAPre
 			t.TranscriptMessageID = o.TranscriptMessageID
-		case PhaseClose:
+		case TurnPhaseClose:
 			var c TurnClose
 			if err := json.Unmarshal(raw, &c); err != nil {
 				return nil
 			}
 			t, ok := turns[c.ID]
 			if !ok {
-				t = &Turn{ID: c.ID, Status: StatusOpen}
+				t = &Turn{ID: c.ID, Status: TurnStatusOpen}
 				turns[c.ID] = t
 			}
 			t.EndedAt = c.EndedAt

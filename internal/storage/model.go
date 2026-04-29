@@ -2,15 +2,26 @@ package storage
 
 import "time"
 
-const (
-	PhaseOpen     = "open"
-	PhaseClose    = "close"
-	EventPhasePre = "pre"
-	EventPhasePos = "post"
+type TurnPhase string
 
-	StatusOpen  = "open"
-	StatusDone  = "done"
-	StatusError = "error"
+const (
+	TurnPhaseOpen  TurnPhase = "open"
+	TurnPhaseClose TurnPhase = "close"
+)
+
+type EventPhase string
+
+const (
+	EventPhasePre  EventPhase = "pre"
+	EventPhasePost EventPhase = "post"
+)
+
+type TurnStatus string
+
+const (
+	TurnStatusOpen  TurnStatus = "open"
+	TurnStatusDone  TurnStatus = "done"
+	TurnStatusError TurnStatus = "error"
 )
 
 type SessionMeta struct {
@@ -26,7 +37,7 @@ type SessionMeta struct {
 
 type TurnOpen struct {
 	ID                  string    `json:"id"`
-	Phase               string    `json:"phase"`
+	Phase               TurnPhase `json:"phase"`
 	StartedAt           time.Time `json:"started_at"`
 	UserPromptPreview   string    `json:"user_prompt_preview,omitempty"`
 	HeadSHAPre          string    `json:"head_sha_pre,omitempty"`
@@ -34,39 +45,39 @@ type TurnOpen struct {
 }
 
 type TurnClose struct {
-	ID                      string    `json:"id"`
-	Phase                   string    `json:"phase"`
-	EndedAt                 time.Time `json:"ended_at"`
-	AssistantSummaryPreview string    `json:"assistant_summary_preview,omitempty"`
-	HeadSHA                 string    `json:"head_sha,omitempty"`
-	DiffPath                string    `json:"diff_path,omitempty"`
-	Status                  string    `json:"status"`
-	ErrorMessage            string    `json:"error_message,omitempty"`
+	ID                      string     `json:"id"`
+	Phase                   TurnPhase  `json:"phase"`
+	EndedAt                 time.Time  `json:"ended_at"`
+	AssistantSummaryPreview string     `json:"assistant_summary_preview,omitempty"`
+	HeadSHA                 string     `json:"head_sha,omitempty"`
+	DiffPath                string     `json:"diff_path,omitempty"`
+	Status                  TurnStatus `json:"status"`
+	ErrorMessage            string     `json:"error_message,omitempty"`
 }
 
 type Turn struct {
-	ID                      string    `json:"id"`
-	StartedAt               time.Time `json:"started_at"`
-	EndedAt                 time.Time `json:"ended_at,omitempty"`
-	UserPromptPreview       string    `json:"user_prompt_preview,omitempty"`
-	AssistantSummaryPreview string    `json:"assistant_summary_preview,omitempty"`
-	HeadSHAPre              string    `json:"head_sha_pre,omitempty"`
-	HeadSHA                 string    `json:"head_sha,omitempty"`
-	DiffPath                string    `json:"diff_path,omitempty"`
-	Status                  string    `json:"status"`
-	ErrorMessage            string    `json:"error_message,omitempty"`
-	TranscriptMessageID     string    `json:"transcript_message_id,omitempty"`
+	ID                      string     `json:"id"`
+	StartedAt               time.Time  `json:"started_at"`
+	EndedAt                 time.Time  `json:"ended_at,omitempty"`
+	UserPromptPreview       string     `json:"user_prompt_preview,omitempty"`
+	AssistantSummaryPreview string     `json:"assistant_summary_preview,omitempty"`
+	HeadSHAPre              string     `json:"head_sha_pre,omitempty"`
+	HeadSHA                 string     `json:"head_sha,omitempty"`
+	DiffPath                string     `json:"diff_path,omitempty"`
+	Status                  TurnStatus `json:"status"`
+	ErrorMessage            string     `json:"error_message,omitempty"`
+	TranscriptMessageID     string     `json:"transcript_message_id,omitempty"`
 }
 
 type Event struct {
-	ID           string    `json:"id"`
-	TurnID       string    `json:"turn_id"`
-	Ts           time.Time `json:"ts"`
-	Tool         string    `json:"tool"`
-	ArgsPreview  string    `json:"args_preview,omitempty"`
-	Phase        string    `json:"phase"`
-	Success      bool      `json:"success,omitempty"`
-	ErrorMessage string    `json:"error_message,omitempty"`
+	ID           string     `json:"id"`
+	TurnID       string     `json:"turn_id"`
+	Ts           time.Time  `json:"ts"`
+	Tool         string     `json:"tool"`
+	ArgsPreview  string     `json:"args_preview,omitempty"`
+	Phase        EventPhase `json:"phase"`
+	Success      bool       `json:"success,omitempty"`
+	ErrorMessage string     `json:"error_message,omitempty"`
 }
 
 type Comment struct {

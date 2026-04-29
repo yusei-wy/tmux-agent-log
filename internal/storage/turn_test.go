@@ -20,13 +20,13 @@ func TestOpenCloseMerge(t *testing.T) {
 		ID:       "t1",
 		EndedAt:  time.Unix(200, 0).UTC(),
 		HeadSHA:  "def",
-		Status:   "done",
+		Status:   storage.TurnStatusDone,
 		DiffPath: "diffs/t1.patch",
 	}))
 	turns, err := storage.ReadTurns(p)
 	require.NoError(t, err)
 	require.Len(t, turns, 1)
-	require.Equal(t, "done", turns[0].Status)
+	require.Equal(t, storage.TurnStatusDone, turns[0].Status)
 	require.Equal(t, "def", turns[0].HeadSHA)
 	require.Equal(t, "hi", turns[0].UserPromptPreview)
 }
@@ -39,7 +39,7 @@ func TestOpenWithoutCloseKeepsStatusOpen(t *testing.T) {
 	}))
 	turns, err := storage.ReadTurns(p)
 	require.NoError(t, err)
-	require.Equal(t, "open", turns[0].Status)
+	require.Equal(t, storage.TurnStatusOpen, turns[0].Status)
 }
 
 func TestReadTurnsOrderedByStartedAt(t *testing.T) {

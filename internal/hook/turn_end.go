@@ -44,7 +44,7 @@ func RunTurnEnd(stdin io.Reader) error {
 
 	var openTurn *storage.Turn
 	for i := len(turns) - 1; i >= 0; i-- {
-		if turns[i].Status == storage.StatusOpen {
+		if turns[i].Status == storage.TurnStatusOpen {
 			openTurn = &turns[i]
 			break
 		}
@@ -56,7 +56,7 @@ func RunTurnEnd(stdin io.Reader) error {
 	close := storage.TurnClose{
 		ID:      openTurn.ID,
 		EndedAt: time.Now().UTC(),
-		Status:  storage.StatusDone,
+		Status:  storage.TurnStatusDone,
 	}
 
 	if meta.GitTracked {

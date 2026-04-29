@@ -26,7 +26,7 @@ func TestTurnEndClosesTurnAndWritesDiff(t *testing.T) {
 
 	sDir, _ := config.SessionDir(cwd, "s1")
 	turns, _ := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
-	require.Equal(t, "done", turns[0].Status)
+	require.Equal(t, storage.TurnStatusDone, turns[0].Status)
 	require.NotEmpty(t, turns[0].HeadSHA)
 	require.NotEmpty(t, turns[0].DiffPath)
 
@@ -43,6 +43,6 @@ func TestTurnEndEmptyDiffClosesWithNullPath(t *testing.T) {
 
 	sDir, _ := config.SessionDir(cwd, "s2")
 	turns, _ := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
-	require.Equal(t, "done", turns[0].Status)
+	require.Equal(t, storage.TurnStatusDone, turns[0].Status)
 	require.Equal(t, "", turns[0].DiffPath)
 }

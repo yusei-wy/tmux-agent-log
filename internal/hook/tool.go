@@ -29,10 +29,10 @@ func RunToolPre(stdin io.Reader) error {
 }
 
 func RunToolPost(stdin io.Reader) error {
-	return runToolHook(stdin, storage.EventPhasePos)
+	return runToolHook(stdin, storage.EventPhasePost)
 }
 
-func runToolHook(stdin io.Reader, phase string) error {
+func runToolHook(stdin io.Reader, phase storage.EventPhase) error {
 	var in toolHookInput
 	if err := ReadInput(stdin, &in); err != nil {
 		return err
@@ -66,7 +66,7 @@ func runToolHook(stdin io.Reader, phase string) error {
 		ArgsPreview: truncate(string(in.ToolInput), 200),
 		Phase:       phase,
 	}
-	if phase == storage.EventPhasePos {
+	if phase == storage.EventPhasePost {
 		event.Success = in.ToolResponse.Success
 		event.ErrorMessage = in.ToolResponse.Error
 	}

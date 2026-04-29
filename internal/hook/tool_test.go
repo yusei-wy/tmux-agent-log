@@ -27,7 +27,7 @@ func TestToolPreAndPostAppendEvents(t *testing.T) {
 
 	events, _ := storage.ReadEvents(filepath.Join(sDir, "events.jsonl"), turnID)
 	require.Len(t, events, 2)
-	require.Equal(t, "pre", events[0].Phase)
-	require.Equal(t, "post", events[1].Phase)
+	require.Equal(t, storage.EventPhasePre, events[0].Phase)
+	require.Equal(t, storage.EventPhasePost, events[1].Phase)
 	require.True(t, events[1].Success)
 }

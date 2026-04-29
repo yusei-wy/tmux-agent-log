@@ -21,7 +21,7 @@ func TestTurnStartAppendsOpenRecord(t *testing.T) {
 	turns, err := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
 	require.NoError(t, err)
 	require.Len(t, turns, 1)
-	require.Equal(t, "open", turns[0].Status)
+	require.Equal(t, storage.TurnStatusOpen, turns[0].Status)
 	require.Equal(t, "do the thing", turns[0].UserPromptPreview)
 	require.NotEmpty(t, turns[0].HeadSHAPre)
 }

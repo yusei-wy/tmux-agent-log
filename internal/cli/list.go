@@ -96,7 +96,7 @@ func listTurnsCmd() *cobra.Command {
 					t.ID,
 					formatTime(t.StartedAt),
 					formatTime(t.EndedAt),
-					t.Status,
+					string(t.Status),
 					t.DiffPath,
 					t.UserPromptPreview,
 				})
