@@ -9,21 +9,25 @@ import (
 
 func TestParseDuration(t *testing.T) {
 	cases := []struct {
-		in   string
-		want time.Duration
-		err  bool
+		name    string
+		in      string
+		want    time.Duration
+		wantErr bool
 	}{
-		{"7d", 7 * 24 * time.Hour, false},
-		{"24h", 24 * time.Hour, false},
-		{"abc", 0, true},
+		{name: "days suffix", in: "7d", want: 7 * 24 * time.Hour},
+		{name: "stdlib duration", in: "24h", want: 24 * time.Hour},
+		{name: "garbage input returns error", in: "abc", wantErr: true},
 	}
-	for _, c := range cases {
-		got, err := parseDuration(c.in)
-		if c.err {
-			require.Error(t, err, c.in)
-			continue
-		}
-		require.NoError(t, err, c.in)
-		require.Equal(t, c.want, got, c.in)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := parseDuration(tc.in)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
 	}
 }

@@ -11,25 +11,29 @@ import (
 
 func TestParseLineRange(t *testing.T) {
 	cases := []struct {
+		name    string
 		in      string
 		start   int
 		end     int
 		wantErr bool
 	}{
-		{"44", 44, 44, false},
-		{"44-46", 44, 46, false},
-		{"46-44", 0, 0, true},
-		{"abc", 0, 0, true},
+		{name: "single line", in: "44", start: 44, end: 44},
+		{name: "range", in: "44-46", start: 44, end: 46},
+		{name: "end before start returns error", in: "46-44", wantErr: true},
+		{name: "non-numeric returns error", in: "abc", wantErr: true},
 	}
-	for _, c := range cases {
-		s, e, err := parseLineRange(c.in)
-		if c.wantErr {
-			require.Error(t, err, c.in)
-			continue
-		}
-		require.NoError(t, err, c.in)
-		require.Equal(t, c.start, s)
-		require.Equal(t, c.end, e)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			s, e, err := parseLineRange(tc.in)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.start, s)
+			require.Equal(t, tc.end, e)
+		})
 	}
 }
 
