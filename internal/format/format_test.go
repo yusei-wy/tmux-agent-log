@@ -27,6 +27,12 @@ func TestJSONL(t *testing.T) {
 	require.Equal(t, "{\"id\":\"1\",\"name\":\"alice\"}\n{\"id\":\"2\",\"name\":\"bob\"}\n", buf.String())
 }
 
+func TestJSON(t *testing.T) {
+	buf := &bytes.Buffer{}
+	require.NoError(t, format.Write(buf, "json", []string{"id", "name"}, [][]string{{"1", "alice"}, {"2", "bob"}}))
+	require.Equal(t, "[{\"id\":\"1\",\"name\":\"alice\"},{\"id\":\"2\",\"name\":\"bob\"}]\n", buf.String())
+}
+
 func TestUnknownFormatErrors(t *testing.T) {
 	err := format.Write(&bytes.Buffer{}, "xml", []string{"a"}, [][]string{{"b"}})
 	require.Error(t, err)
