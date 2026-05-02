@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/yusei-wy/tmux-agent-log/internal/config"
+	"github.com/yusei-wy/tmux-agent-log/internal/format"
 )
 
 func init() {
@@ -31,7 +32,7 @@ func configShowCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return writeJSONIndent(cmd.OutOrStdout(), cfg)
+			return format.JSONIndent(cmd.OutOrStdout(), cfg)
 		},
 	}
 }

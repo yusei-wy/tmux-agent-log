@@ -1,15 +1,14 @@
 package cli
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
 
+	"github.com/yusei-wy/tmux-agent-log/internal/format"
 	"github.com/yusei-wy/tmux-agent-log/internal/git"
 	"github.com/yusei-wy/tmux-agent-log/internal/storage"
 )
@@ -34,7 +33,7 @@ func showSessionCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return writeJSONIndent(cmd.OutOrStdout(), meta)
+			return format.JSONIndent(cmd.OutOrStdout(), meta)
 		},
 	}
 }
@@ -68,7 +67,7 @@ func showTurnCmd() *cobra.Command {
 			if found == nil {
 				return fmt.Errorf("turn %q が見つからない", args[0])
 			}
-			if err := writeJSONIndent(cmd.OutOrStdout(), found); err != nil {
+			if err := format.JSONIndent(cmd.OutOrStdout(), found); err != nil {
 				return err
 			}
 			if withDiff && found.DiffPath != "" {
@@ -138,18 +137,4 @@ func showDiffCmd() *cobra.Command {
 	cmd.Flags().StringVar(&base, "base", "session", "session | turn | main")
 	cmd.Flags().StringVar(&turnID, "turn", "", "--base=turn のときの turn id")
 	return cmd
-}
-
-func writeJSONIndent(w io.Writer, v any) error {
-	body, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return err
-	}
-	if _, err := w.Write(body); err != nil {
-		return err
-	}
-	if _, err := w.Write([]byte{'\n'}); err != nil {
-		return err
-	}
-	return nil
 }

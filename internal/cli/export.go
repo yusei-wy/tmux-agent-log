@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/yusei-wy/tmux-agent-log/internal/format"
 	"github.com/yusei-wy/tmux-agent-log/internal/storage"
 )
 
@@ -52,7 +53,7 @@ func exportCmd() *cobra.Command {
 			fmt.Fprintln(out, "## Turns")
 			for _, t := range turns {
 				fmt.Fprintf(out, "\n### %s\n\n", t.ID)
-				fmt.Fprintf(out, "- started_at: %s\n", formatTime(t.StartedAt))
+				fmt.Fprintf(out, "- started_at: %s\n", format.Time(t.StartedAt))
 				if t.UserPromptPreview != "" {
 					fmt.Fprintf(out, "- prompt: %s\n", t.UserPromptPreview)
 				}

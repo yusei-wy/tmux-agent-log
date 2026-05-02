@@ -5,11 +5,12 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/yusei-wy/tmux-agent-log/internal/config"
 )
 
+// findSessionDir は state ディレクトリ配下の全プロジェクトを横断して
+// session ID にマッチする state ディレクトリを返す。
 func findSessionDir(sessionID string) (string, error) {
 	state, err := config.StateDir()
 	if err != nil {
@@ -33,11 +34,4 @@ func findSessionDir(sessionID string) (string, error) {
 		}
 	}
 	return "", os.ErrNotExist
-}
-
-func formatTime(t time.Time) string {
-	if t.IsZero() {
-		return ""
-	}
-	return t.UTC().Format("2006-01-02 15:04:05")
 }

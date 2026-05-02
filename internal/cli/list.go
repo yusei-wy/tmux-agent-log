@@ -60,7 +60,7 @@ func listSessionsCmd() *cobra.Command {
 						p.Name(),
 						meta.Goal,
 						meta.Cwd,
-						formatTime(meta.StartedAt),
+						format.Time(meta.StartedAt),
 					})
 				}
 			}
@@ -94,8 +94,8 @@ func listTurnsCmd() *cobra.Command {
 			for _, t := range turns {
 				rows = append(rows, []string{
 					t.ID,
-					formatTime(t.StartedAt),
-					formatTime(t.EndedAt),
+					format.Time(t.StartedAt),
+					format.Time(t.EndedAt),
 					string(t.Status),
 					t.DiffPath,
 					t.UserPromptPreview,
@@ -142,7 +142,7 @@ func listCommentsCmd() *cobra.Command {
 					strconv.Itoa(c.LineStart),
 					strconv.Itoa(c.LineEnd),
 					c.Text,
-					formatTime(c.SentAt),
+					format.Time(c.SentAt),
 				})
 			}
 			return format.Write(cmd.OutOrStdout(), formatName,
