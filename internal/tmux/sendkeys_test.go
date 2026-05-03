@@ -3,6 +3,7 @@ package tmux
 import (
 	"bytes"
 	"encoding/base64"
+	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -23,7 +24,8 @@ func TestSendKeysToValidPane(t *testing.T) {
 	out, _ := exec.Command("tmux", "-S", sock, "list-panes", "-t", "t", "-F", "#{pane_id}").Output()
 	paneID := strings.TrimSpace(string(out))
 
-	res := SendToPaneWithSocket(sock, paneID, "hello world")
+	res := sendToPaneWithWriters(sock, paneID, "hello world", os.Stdout, os.Stderr)
+
 	require.Equal(t, SendResultOK, res.Kind)
 
 	time.Sleep(100 * time.Millisecond)
