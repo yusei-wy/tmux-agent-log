@@ -1,6 +1,7 @@
 package hook
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 	"time"
@@ -18,7 +19,7 @@ type sessionStartInput struct {
 
 func RunSessionStart(stdin io.Reader) error {
 	var in sessionStartInput
-	if err := ReadInput(stdin, &in); err != nil {
+	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
 		return err
 	}
 	if in.SessionID == "" || in.Cwd == "" {

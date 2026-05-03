@@ -34,7 +34,7 @@ func RunToolPost(stdin io.Reader) error {
 
 func runToolHook(stdin io.Reader, phase storage.EventPhase) error {
 	var in toolHookInput
-	if err := ReadInput(stdin, &in); err != nil {
+	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
 		return err
 	}
 	if in.SessionID == "" || in.Cwd == "" {
@@ -73,4 +73,3 @@ func runToolHook(stdin io.Reader, phase storage.EventPhase) error {
 
 	return storage.AppendEvent(filepath.Join(sDir, "events.jsonl"), event)
 }
-

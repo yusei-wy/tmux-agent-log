@@ -1,6 +1,7 @@
 package hook
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
@@ -19,7 +20,7 @@ type turnEndInput struct {
 
 func RunTurnEnd(stdin io.Reader) error {
 	var in turnEndInput
-	if err := ReadInput(stdin, &in); err != nil {
+	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
 		return err
 	}
 	if in.SessionID == "" || in.Cwd == "" {

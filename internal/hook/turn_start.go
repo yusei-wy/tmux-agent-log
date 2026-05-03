@@ -1,6 +1,7 @@
 package hook
 
 import (
+	"encoding/json"
 	"io"
 	"path/filepath"
 	"time"
@@ -21,7 +22,7 @@ type turnStartInput struct {
 
 func RunTurnStart(stdin io.Reader) error {
 	var in turnStartInput
-	if err := ReadInput(stdin, &in); err != nil {
+	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
 		return err
 	}
 	if in.SessionID == "" || in.Cwd == "" {
@@ -55,4 +56,3 @@ func RunTurnStart(stdin io.Reader) error {
 
 	return storage.AppendTurnOpen(filepath.Join(sDir, "turns.jsonl"), turn)
 }
-

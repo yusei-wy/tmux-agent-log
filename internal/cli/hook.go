@@ -1,10 +1,13 @@
 package cli
 
 import (
+	"fmt"
 	"io"
+	"os"
 
 	"github.com/spf13/cobra"
 
+	"github.com/yusei-wy/tmux-agent-log/internal/errlog"
 	"github.com/yusei-wy/tmux-agent-log/internal/hook"
 )
 
@@ -21,11 +24,28 @@ func init() {
 	rootCmd.AddCommand(hookCmd)
 }
 
+// 補助ツールなので panic が発生しても握りつぶす
+func runWithRecover(fn func() error) int {
+	defer func() {
+		if r := recover(); r != nil {
+			msg := fmt.Sprintf("%v", r)
+			_ = errlog.Record("hook", "panic", "", msg)
+			fmt.Fprintln(os.Stderr, "tmux-agent-log: hook panic:", msg)
+		}
+	}()
+
+	if err := fn(); err != nil {
+		_ = errlog.Record("hook", "error", "", err.Error())
+		fmt.Fprintln(os.Stderr, "tmux-agent-log: hook error:", err)
+	}
+	return 0
+}
+
 func mkHook(name string, runner func(io.Reader) error) *cobra.Command {
 	return &cobra.Command{
 		Use: name,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			hook.RunWithRecover(func() error { return runner(cmd.InOrStdin()) })
+			runWithRecover(func() error { return runner(cmd.InOrStdin()) })
 			return nil
 		},
 	}
