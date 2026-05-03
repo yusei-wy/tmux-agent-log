@@ -14,10 +14,15 @@ goimports -w -local github.com/yusei-wy/tmux-agent-log .
 
 [tasks."fmt:files"]
 description = "Format specified Go files (used by hooks)"
-run = """
-gofumpt -w "$@"
-goimports -w -local github.com/yusei-wy/tmux-agent-log "$@"
-"""
+usage = 'arg "<files>" var=#true'
+run = '''
+{% raw %}
+eval "files=($usage_files)"
+[ ${#files[@]} -eq 0 ] && exit 0
+gofumpt -w "${files[@]}"
+goimports -w -local github.com/yusei-wy/tmux-agent-log "${files[@]}"
+{% endraw %}
+'''
 
 [tasks.lint]
 description = "Run golangci-lint"
