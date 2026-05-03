@@ -64,7 +64,7 @@ func commentAddCmd() *cobra.Command {
 			if err := storage.AppendComment(path, c); err != nil {
 				return err
 			}
-			fmt.Fprintln(cmd.OutOrStdout(), c.ID)
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), c.ID)
 			return nil
 		},
 	}
@@ -104,7 +104,7 @@ func commentListCmd() *cobra.Command {
 				if !c.SentAt.IsZero() {
 					flag = " [sent]"
 				}
-				fmt.Fprintf(out, "%s  %s:%d-%d%s\n  %s\n", c.ID, c.File, c.LineStart, c.LineEnd, flag, c.Text)
+				_, _ = fmt.Fprintf(out, "%s  %s:%d-%d%s\n  %s\n", c.ID, c.File, c.LineStart, c.LineEnd, flag, c.Text)
 			}
 			return nil
 		},
@@ -159,12 +159,12 @@ func commentSendCmd() *cobra.Command {
 				return err
 			}
 			if len(unsent) == 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "(no unsent comments)")
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "(no unsent comments)")
 				return nil
 			}
 			prompt := renderSendPrompt(unsent)
 			if preview {
-				fmt.Fprint(cmd.OutOrStdout(), prompt)
+				_, _ = fmt.Fprint(cmd.OutOrStdout(), prompt)
 				return nil
 			}
 			res := tmux.SendToPane(meta.TmuxPane, prompt)

@@ -46,23 +46,24 @@ func exportCmd() *cobra.Command {
 			if title == "" {
 				title = "Session Export"
 			}
-			fmt.Fprintf(out, "# %s\n\n", title)
-			fmt.Fprintf(out, "- session: `%s`\n", meta.ClaudeSessionID)
-			fmt.Fprintf(out, "- cwd: `%s`\n", meta.Cwd)
-			fmt.Fprintf(out, "- base: `%s`\n\n", meta.BaseSHA)
-			fmt.Fprintln(out, "## Turns")
+			_, _ = fmt.Fprintf(out, "# %s\n\n", title)
+			_, _ = fmt.Fprintf(out, "- session: `%s`\n", meta.ClaudeSessionID)
+			_, _ = fmt.Fprintf(out, "- cwd: `%s`\n", meta.Cwd)
+			_, _ = fmt.Fprintf(out, "- base: `%s`\n\n", meta.BaseSHA)
+			_, _ = fmt.Fprintln(out, "## Turns")
 			for _, t := range turns {
-				fmt.Fprintf(out, "\n### %s\n\n", t.ID)
-				fmt.Fprintf(out, "- started_at: %s\n", format.Time(t.StartedAt))
+				_, _ = fmt.Fprintf(out, "\n### %s\n\n", t.ID)
+				_, _ = fmt.Fprintf(out, "- started_at: %s\n", format.Time(t.StartedAt))
 				if t.UserPromptPreview != "" {
-					fmt.Fprintf(out, "- prompt: %s\n", t.UserPromptPreview)
+					_, _ = fmt.Fprintf(out, "- prompt: %s\n", t.UserPromptPreview)
 				}
 				if t.DiffPath != "" {
+					//nolint:gosec // sDir はユーザーのセッションディレクトリ、t.DiffPath は同セッション内の自前 storage が書いた相対パス。設計上 variable。
 					body, err := os.ReadFile(filepath.Join(sDir, t.DiffPath))
 					if err == nil {
-						fmt.Fprintln(out, "\n```diff")
-						out.Write(body)
-						fmt.Fprintln(out, "```")
+						_, _ = fmt.Fprintln(out, "\n```diff")
+						_, _ = out.Write(body)
+						_, _ = fmt.Fprintln(out, "```")
 					}
 				}
 			}

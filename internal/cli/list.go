@@ -154,4 +154,3 @@ func listCommentsCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&unsent, "unsent", false, "未送信のみ")
 	return cmd
 }
-

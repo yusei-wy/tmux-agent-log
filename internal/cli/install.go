@@ -41,7 +41,7 @@ func installHooksCmd() *cobra.Command {
 			bin := resolveBinName()
 			if dry {
 				for _, e := range hookEvents {
-					fmt.Fprintf(cmd.OutOrStdout(), "+ %s: %s hook %s\n", e.Event, bin, e.Sub)
+					_, _ = fmt.Fprintf(cmd.OutOrStdout(), "+ %s: %s hook %s\n", e.Event, bin, e.Sub)
 				}
 				return nil
 			}
@@ -82,6 +82,7 @@ func claudeSettingsPath() (string, error) {
 }
 
 func loadSettings(path string) (map[string]any, error) {
+	//nolint:gosec // path は claudeSettingsPath() が組み立てた ~/.claude/settings.json。利用者自身のホーム配下の設定ファイルを読む設計上の意図。
 	body, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {

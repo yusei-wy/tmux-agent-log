@@ -33,8 +33,8 @@ func errorsListCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				out.Write(body)
-				out.Write([]byte{'\n'})
+				_, _ = out.Write(body)
+				_, _ = out.Write([]byte{'\n'})
 			}
 			return nil
 		},

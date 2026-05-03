@@ -46,7 +46,7 @@ func configPathCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintln(cmd.OutOrStdout(), path)
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), path)
 			return nil
 		},
 	}
@@ -68,6 +68,7 @@ func configEditCmd() *cobra.Command {
 			if editor == "" {
 				editor = "vi"
 			}
+			//nolint:gosec // EDITOR は利用者自身の環境変数。ユーザーが指定したエディタで設定ファイルを開くのは設計上の意図。
 			c := exec.Command(editor, path)
 			c.Stdin = os.Stdin
 			c.Stdout = os.Stdout

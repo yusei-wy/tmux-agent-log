@@ -71,12 +71,13 @@ func showTurnCmd() *cobra.Command {
 				return err
 			}
 			if withDiff && found.DiffPath != "" {
+				//nolint:gosec // sDir はユーザーのセッションディレクトリ、found.DiffPath は同セッションの自前 storage が書いた相対パス。設計上 variable。
 				body, err := os.ReadFile(filepath.Join(sDir, found.DiffPath))
 				if err != nil {
 					return err
 				}
-				fmt.Fprintln(cmd.OutOrStdout(), "--- diff ---")
-				cmd.OutOrStdout().Write(body)
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "--- diff ---")
+				_, _ = cmd.OutOrStdout().Write(body)
 			}
 			return nil
 		},
@@ -113,6 +114,7 @@ func showDiffCmd() *cobra.Command {
 				if turnID == "" {
 					return errors.New("--base=turn のときは --turn が必須")
 				}
+				//nolint:gosec // sDir はユーザーのセッションディレクトリ、turnID は --turn フラグで指定された ID。設計上 variable。
 				body, err := os.ReadFile(filepath.Join(sDir, "diffs", turnID+".patch"))
 				if err != nil {
 					if errors.Is(err, os.ErrNotExist) {

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
 	"github.com/yusei-wy/tmux-agent-log/internal/storage"
 )
 
@@ -57,7 +58,7 @@ func TestConcurrentAppendsSerialize(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "c.jsonl")
 	var wg sync.WaitGroup
 	const n = 50
-	for i := 0; i < n; i++ {
+	for range n {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()

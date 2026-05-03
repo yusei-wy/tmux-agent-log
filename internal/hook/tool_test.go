@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
 	"github.com/yusei-wy/tmux-agent-log/internal/config"
 	"github.com/yusei-wy/tmux-agent-log/internal/storage"
 )

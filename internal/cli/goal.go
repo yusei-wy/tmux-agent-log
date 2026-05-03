@@ -36,7 +36,7 @@ func goalCmd() *cobra.Command {
 				if out == "" {
 					out = "(no goal)"
 				}
-				fmt.Fprintln(cmd.OutOrStdout(), out)
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), out)
 				return nil
 			}
 			return storage.UpdateSessionGoal(sDir, args[0])

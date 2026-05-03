@@ -90,7 +90,7 @@ func clearCmd() *cobra.Command {
 					if err := os.RemoveAll(full); err != nil {
 						return err
 					}
-					fmt.Fprintln(cmd.OutOrStdout(), "removed", full)
+					_, _ = fmt.Fprintln(cmd.OutOrStdout(), "removed", full)
 				}
 			}
 			return nil
@@ -121,8 +121,8 @@ func confirmAll(cmd *cobra.Command) bool {
 	if (st.Mode() & os.ModeCharDevice) == 0 {
 		return false
 	}
-	fmt.Fprint(cmd.OutOrStdout(), "本当に全セッションを削除する? [y/N]: ")
+	_, _ = fmt.Fprint(cmd.OutOrStdout(), "本当に全セッションを削除する? [y/N]: ")
 	var ans string
-	fmt.Fscanln(cmd.InOrStdin(), &ans)
+	_, _ = fmt.Fscanln(cmd.InOrStdin(), &ans)
 	return strings.EqualFold(ans, "y")
 }
