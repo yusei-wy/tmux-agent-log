@@ -1,4 +1,4 @@
-package hook
+package hook_test
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yusei-wy/tmux-agent-log/internal/config"
+	"github.com/yusei-wy/tmux-agent-log/internal/hook"
 	"github.com/yusei-wy/tmux-agent-log/internal/storage"
 )
 
@@ -15,8 +16,8 @@ func TestTurnStartAppendsOpenRecord(t *testing.T) {
 	t.Setenv("XDG_STATE_HOME", t.TempDir())
 	cwd := setupGitRepo(t)
 
-	require.NoError(t, RunSessionStart(bytes.NewBufferString(`{"session_id":"abc","cwd":"`+cwd+`"}`)))
-	require.NoError(t, RunTurnStart(bytes.NewBufferString(`{"session_id":"abc","cwd":"`+cwd+`","prompt":"do the thing"}`)))
+	require.NoError(t, hook.RunSessionStart(bytes.NewBufferString(`{"session_id":"abc","cwd":"`+cwd+`"}`)))
+	require.NoError(t, hook.RunTurnStart(bytes.NewBufferString(`{"session_id":"abc","cwd":"`+cwd+`","prompt":"do the thing"}`)))
 
 	sDir, _ := config.SessionDir(cwd, "abc")
 	turns, err := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
@@ -28,6 +29,6 @@ func TestTurnStartAppendsOpenRecord(t *testing.T) {
 }
 
 func TestPreviewFirstLinesTruncatesAndLimitsLines(t *testing.T) {
-	require.Equal(t, "line1\nline2", previewFirstLines("line1\nline2\nline3", 100))
-	require.Equal(t, "abc…", previewFirstLines("abcdef", 3))
+	require.Equal(t, "line1\nline2", hook.PreviewFirstLines("line1\nline2\nline3", 100))
+	require.Equal(t, "abc…", hook.PreviewFirstLines("abcdef", 3))
 }

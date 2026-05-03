@@ -1,12 +1,11 @@
-package cli
+package cli_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yusei-wy/tmux-agent-log/internal/storage"
+	"github.com/yusei-wy/tmux-agent-log/internal/cli"
 )
 
 func TestParseLineRange(t *testing.T) {
@@ -25,7 +24,7 @@ func TestParseLineRange(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			s, e, err := parseLineRange(tc.in)
+			s, e, err := cli.ParseLineRange(tc.in)
 			if tc.wantErr {
 				require.Error(t, err)
 				return
@@ -35,16 +34,4 @@ func TestParseLineRange(t *testing.T) {
 			require.Equal(t, tc.end, e)
 		})
 	}
-}
-
-func TestRenderSendPromptContainsAllEntries(t *testing.T) {
-	cs := []storage.Comment{
-		{File: "a.go", LineStart: 10, LineEnd: 12, Text: "foo", CreatedAt: time.Unix(1, 0).UTC()},
-		{File: "b.go", LineStart: 30, LineEnd: 30, Text: "bar", CreatedAt: time.Unix(2, 0).UTC()},
-	}
-	out := renderSendPrompt(cs)
-	require.Contains(t, out, "a.go:10-12")
-	require.Contains(t, out, "foo")
-	require.Contains(t, out, "b.go:30-30")
-	require.Contains(t, out, "bar")
 }

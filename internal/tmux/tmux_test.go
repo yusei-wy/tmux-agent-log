@@ -1,4 +1,4 @@
-package tmux
+package tmux_test
 
 import (
 	"os/exec"
@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/yusei-wy/tmux-agent-log/internal/tmux"
 )
 
 func TestPaneExists(t *testing.T) {
@@ -21,11 +23,11 @@ func TestPaneExists(t *testing.T) {
 	require.NoError(t, err)
 	paneID := strings.TrimSpace(string(out))
 
-	ok, err := paneExistsWithSocket(sock, paneID)
+	ok, err := tmux.PaneExistsWithSocket(sock, paneID)
 	require.NoError(t, err)
 	require.True(t, ok)
 
-	ok, err = paneExistsWithSocket(sock, "%9999")
+	ok, err = tmux.PaneExistsWithSocket(sock, "%9999")
 	require.NoError(t, err)
 	require.False(t, ok)
 }

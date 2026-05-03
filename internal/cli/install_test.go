@@ -1,4 +1,4 @@
-package cli
+package cli_test
 
 import (
 	"encoding/json"
@@ -7,13 +7,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/yusei-wy/tmux-agent-log/internal/cli"
 )
 
 func TestInstallHooksCreatesSettingsFile(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	target := filepath.Join(home, ".claude", "settings.json")
-	require.NoError(t, installHooksTo(target, "tmux-agent-log"))
+	require.NoError(t, cli.InstallHooksTo(target, "tmux-agent-log"))
 
 	raw, err := os.ReadFile(target)
 	require.NoError(t, err)
@@ -30,8 +32,8 @@ func TestInstallHooksIsIdempotent(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	target := filepath.Join(home, ".claude", "settings.json")
-	require.NoError(t, installHooksTo(target, "tmux-agent-log"))
-	require.NoError(t, installHooksTo(target, "tmux-agent-log"))
+	require.NoError(t, cli.InstallHooksTo(target, "tmux-agent-log"))
+	require.NoError(t, cli.InstallHooksTo(target, "tmux-agent-log"))
 
 	raw, _ := os.ReadFile(target)
 	var settings map[string]any
@@ -44,8 +46,8 @@ func TestUninstallRemovesOurHooks(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	target := filepath.Join(home, ".claude", "settings.json")
-	require.NoError(t, installHooksTo(target, "tmux-agent-log"))
-	require.NoError(t, uninstallHooksFrom(target, "tmux-agent-log"))
+	require.NoError(t, cli.InstallHooksTo(target, "tmux-agent-log"))
+	require.NoError(t, cli.UninstallHooksFrom(target, "tmux-agent-log"))
 
 	raw, _ := os.ReadFile(target)
 	var settings map[string]any
