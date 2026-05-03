@@ -176,7 +176,7 @@ type ErrEntry struct {
 **ファイル:**
 - 作成: `.gitignore`
 
-- [ ] **Step 1:** `.gitignore` を作成:
+- [x] **Step 1:** `.gitignore` を作成:
 
   ```gitignore
   # ビルド成果物
@@ -196,7 +196,7 @@ type ErrEntry struct {
   .DS_Store
   ```
 
-- [ ] **Step 2:** git を初期化し、既存の docs を初回コミット:
+- [x] **Step 2:** git を初期化し、既存の docs を初回コミット:
 
   ```bash
   git init
@@ -212,7 +212,7 @@ type ErrEntry struct {
 **ファイル:**
 - 作成: `go.mod`, `go.sum`
 
-- [ ] **Step 1:** モジュール初期化と依存追加:
+- [x] **Step 1:** モジュール初期化と依存追加:
 
   ```bash
   go mod init github.com/yusei-wy/tmux-agent-log
@@ -223,9 +223,9 @@ type ErrEntry struct {
   go get github.com/stretchr/testify@latest
   ```
 
-- [ ] **Step 2:** `go.mod` で `go 1.26` が宣言されていることを確認（`go get` が古いバージョンを書いた場合は手動で修正）。
+- [x] **Step 2:** `go.mod` で `go 1.26` が宣言されていることを確認（`go get` が古いバージョンを書いた場合は手動で修正）。
 
-- [ ] **Step 3:** コミット:
+- [x] **Step 3:** コミット:
 
   ```bash
   git add go.mod go.sum
@@ -241,7 +241,7 @@ type ErrEntry struct {
 **Exports:**
 - `cli.Execute() error` — cobra root を実行する。`main` から呼ばれる。
 
-- [ ] **Step 1:** `cmd/tmux-agent-log/main.go`:
+- [x] **Step 1:** `cmd/tmux-agent-log/main.go`:
 
   ```go
   package main
@@ -259,7 +259,7 @@ type ErrEntry struct {
   }
   ```
 
-- [ ] **Step 2:** `internal/cli/root.go`:
+- [x] **Step 2:** `internal/cli/root.go`:
 
   ```go
   package cli
@@ -278,7 +278,7 @@ type ErrEntry struct {
   }
   ```
 
-- [ ] **Step 3:** ビルドして `--help` で配線確認:
+- [x] **Step 3:** ビルドして `--help` で配線確認:
 
   ```bash
   go build -o /tmp/tmux-agent-log ./cmd/tmux-agent-log
@@ -287,7 +287,7 @@ type ErrEntry struct {
 
   期待: cobra が生成したヘルプが表示される。
 
-- [ ] **Step 4:** コミット:
+- [x] **Step 4:** コミット:
 
   ```bash
   git add cmd/ internal/cli/root.go
@@ -430,9 +430,9 @@ func TestLoadReadsTOMLOverrides(t *testing.T) {
 **ファイル:**
 - 作成: `internal/storage/model.go`
 
-- [ ] 上記の「共有データモデル」セクションの型定義を `internal/storage/model.go` にコピーする。テスト不要（コンパイルのみ）。
+- [x] 上記の「共有データモデル」セクションの型定義を `internal/storage/model.go` にコピーする。テスト不要（コンパイルのみ）。
 
-- [ ] `go build ./...` が通ることを確認。
+- [x] `go build ./...` が通ることを確認。
 
 **コミット:** `feat(storage): データモデル型を追加`
 
@@ -1903,7 +1903,7 @@ func TestUninstallRemovesOurHooks(t *testing.T) {
 **ファイル:**
 - 作成: `scripts/smoke.sh`
 
-- [ ] **Step 1:** `scripts/smoke.sh` を作成:
+- [x] **Step 1:** `scripts/smoke.sh` を作成:
 
   ```bash
   #!/usr/bin/env bash
@@ -1954,7 +1954,7 @@ func TestUninstallRemovesOurHooks(t *testing.T) {
   echo "SMOKE OK"
   ```
 
-- [ ] **Step 2:** 実行:
+- [x] **Step 2:** 実行:
 
   ```bash
   chmod +x scripts/smoke.sh
@@ -1963,7 +1963,7 @@ func TestUninstallRemovesOurHooks(t *testing.T) {
 
   期待: 最終行に `SMOKE OK`。
 
-- [ ] **Step 3:** コミット:
+- [x] **Step 3:** コミット:
 
   ```bash
   git add scripts/
@@ -1975,7 +1975,7 @@ func TestUninstallRemovesOurHooks(t *testing.T) {
 **ファイル:**
 - 作成: `README.md`
 
-- [ ] **Step 1:** README を作成（簡潔に、全体像は spec を参照させる）:
+- [x] **Step 1:** README を作成（簡潔に、全体像は spec を参照させる）:
 
   ```markdown
   # tmux-agent-log
@@ -2040,7 +2040,7 @@ func TestUninstallRemovesOurHooks(t *testing.T) {
   MIT（予定。初回公開リリース前に確定）。
   ```
 
-- [ ] **Step 2:** コミット:
+- [x] **Step 2:** コミット:
 
   ```bash
   git add README.md
@@ -2053,17 +2053,17 @@ func TestUninstallRemovesOurHooks(t *testing.T) {
 
 全 31 タスク完了後に確認:
 
-- [ ] `go build ./...` が警告なしで成功する
-- [ ] `go test -race ./...` が全部 green
-- [ ] `./scripts/smoke.sh` が `SMOKE OK` を出力
-- [ ] 手動: バイナリをインストール、`tmux-agent-log install-hooks` を実行、git リポジトリで `claude` セッションを開始、軽く対話してから:
+- [x] `go build ./...` が警告なしで成功する
+- [x] `go test -race ./...` が全部 green
+- [x] `./scripts/smoke.sh` が `SMOKE OK` を出力
+- [x] 手動: バイナリをインストール、`tmux-agent-log install-hooks` を実行、git リポジトリで `claude` セッションを開始、軽く対話してから:
   - `list-sessions` で新セッションが見える
   - `list-turns --session <id>` で turn が見える
   - コメント追加 + `comment send --preview` でレンダリング済みプロンプトが見える
   - `show-diff <id>` が有効な unified diff を出力
-- [ ] `install-hooks` を 2 回実行しても重複しない（冪等）
-- [ ] `uninstall-hooks` で hooks map から `tmux-agent-log` エントリが全部消える
-- [ ] 全タスクがそれぞれ独立したコミットになっている
+- [x] `install-hooks` を 2 回実行しても重複しない（冪等）
+- [x] `uninstall-hooks` で hooks map から `tmux-agent-log` エントリが全部消える
+- [x] 全タスクがそれぞれ独立したコミットになっている
 
 ## 次の Plan
 
