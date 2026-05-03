@@ -1,0 +1,36 @@
+[tools]
+go = "1.26.2"
+golangci-lint = "2.12.1"
+gofumpt = "0.9.2"
+lefthook = "2.1.6"
+"go:golang.org/x/tools/cmd/goimports" = "latest"
+
+[tasks.fmt]
+description = "Format all Go files"
+run = """
+gofumpt -w .
+goimports -w -local github.com/yusei-wy/tmux-agent-log .
+"""
+
+[tasks."fmt:files"]
+description = "Format specified Go files (used by hooks)"
+run = """
+gofumpt -w "$@"
+goimports -w -local github.com/yusei-wy/tmux-agent-log "$@"
+"""
+
+[tasks.lint]
+description = "Run golangci-lint"
+run = "golangci-lint run"
+
+[tasks."lint:fix"]
+description = "Run golangci-lint with --fix"
+run = "golangci-lint run --fix"
+
+[tasks.test]
+description = "Run all tests"
+run = "go test ./..."
+
+[tasks.check]
+description = "Run fmt, lint, test"
+depends = ["fmt", "lint", "test"]

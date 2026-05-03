@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: false
+  jobs:
+    - name: fmt
+      glob: "*.go"
+      run: mise run fmt:files {staged_files}
+      stage_fixed: true
+    - name: lint-fix
+      glob: "*.go"
+      run: mise run lint:fix
+      stage_fixed: true
+    - name: test
+      glob: "*.go"
+      run: mise run test

@@ -19,6 +19,27 @@ tmux-agent-log install-hooks      # ~/.claude/settings.json への opt-in 編集
 
 前提: tmux 3.2+、git、ビルド時に Go 1.26+。
 
+## 開発環境セットアップ
+
+ツールチェーン（go / golangci-lint / gofumpt / goimports / lefthook）は `.mise.toml` で固定。
+
+```bash
+mise install                      # 全ツール導入
+mise exec -- lefthook install     # pre-commit フック配置
+```
+
+日常コマンド:
+
+```bash
+mise run fmt          # gofumpt + goimports で全 .go ファイル整形
+mise run lint         # golangci-lint
+mise run lint:fix     # golangci-lint --fix
+mise run test         # go test ./...
+mise run check        # 上記 3 つを順次
+```
+
+`git commit` 時、lefthook が staged Go ファイルに対して fmt → lint:fix → test を順に実行し、修正があれば自動で再 stage する。
+
 ## クイック使用例
 
 ```sh
