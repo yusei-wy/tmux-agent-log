@@ -12,54 +12,37 @@ import (
 	"github.com/yusei-wy/tmux-agent-log/internal/storage"
 )
 
-func TestTurnEnd(t *testing.T) {
-	cases := []struct {
-		name             string
-		modifyAfterStart func(t *testing.T, cwd string)
-		wantDiffContains string // 空なら DiffPath が空であることを検証する
-	}{
-		{
-			name: "modifications close turn with diff path and patch contents",
-			modifyAfterStart: func(t *testing.T, cwd string) {
-				require.NoError(t, os.WriteFile(filepath.Join(cwd, "hello.txt"), []byte("hi\n"), 0o644))
-				require.NoError(t, exec.Command("git", "-C", cwd, "add", "hello.txt").Run())
-				require.NoError(t, exec.Command("git", "-C", cwd, "commit", "-m", "t1").Run())
-			},
-			wantDiffContains: "+hi",
-		},
-		{
-			name:             "no modifications close turn with empty diff path",
-			modifyAfterStart: func(t *testing.T, cwd string) {},
-			wantDiffContains: "",
-		},
-	}
+func TestTurnEndClosesTurnAndWritesDiff(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
+	cwd := setupGitRepo(t)
+	require.NoError(t, RunSessionStart(bytes.NewBufferString(`{"session_id":"s1","cwd":"`+cwd+`"}`)))
+	require.NoError(t, RunTurnStart(bytes.NewBufferString(`{"session_id":"s1","cwd":"`+cwd+`","prompt":"p"}`)))
 
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Setenv("XDG_STATE_HOME", t.TempDir())
-			cwd := setupGitRepo(t)
-			sessionID := "s"
-			require.NoError(t, RunSessionStart(bytes.NewBufferString(`{"session_id":"`+sessionID+`","cwd":"`+cwd+`"}`)))
-			require.NoError(t, RunTurnStart(bytes.NewBufferString(`{"session_id":"`+sessionID+`","cwd":"`+cwd+`","prompt":"p"}`)))
+	require.NoError(t, os.WriteFile(filepath.Join(cwd, "hello.txt"), []byte("hi\n"), 0o644))
+	require.NoError(t, exec.Command("git", "-C", cwd, "add", "hello.txt").Run())
+	require.NoError(t, exec.Command("git", "-C", cwd, "commit", "-m", "t1").Run())
 
-			tc.modifyAfterStart(t, cwd)
+	require.NoError(t, RunTurnEnd(bytes.NewBufferString(`{"session_id":"s1","cwd":"`+cwd+`"}`)))
 
-			require.NoError(t, RunTurnEnd(bytes.NewBufferString(`{"session_id":"`+sessionID+`","cwd":"`+cwd+`"}`)))
+	sDir, _ := config.SessionDir(cwd, "s1")
+	turns, _ := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
+	require.Equal(t, storage.TurnStatusDone, turns[0].Status)
+	require.NotEmpty(t, turns[0].HeadSHA)
+	require.NotEmpty(t, turns[0].DiffPath)
 
-			sDir, _ := config.SessionDir(cwd, sessionID)
-			turns, err := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
-			require.NoError(t, err)
-			require.Equal(t, storage.TurnStatusDone, turns[0].Status)
+	raw, _ := os.ReadFile(filepath.Join(sDir, turns[0].DiffPath))
+	require.Contains(t, string(raw), "+hi")
+}
 
-			if tc.wantDiffContains == "" {
-				require.Equal(t, "", turns[0].DiffPath)
-				return
-			}
-			require.NotEmpty(t, turns[0].HeadSHA)
-			require.NotEmpty(t, turns[0].DiffPath)
-			raw, err := os.ReadFile(filepath.Join(sDir, turns[0].DiffPath))
-			require.NoError(t, err)
-			require.Contains(t, string(raw), tc.wantDiffContains)
-		})
-	}
+func TestTurnEndEmptyDiffClosesWithNullPath(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
+	cwd := setupGitRepo(t)
+	require.NoError(t, RunSessionStart(bytes.NewBufferString(`{"session_id":"s2","cwd":"`+cwd+`"}`)))
+	require.NoError(t, RunTurnStart(bytes.NewBufferString(`{"session_id":"s2","cwd":"`+cwd+`","prompt":"p"}`)))
+	require.NoError(t, RunTurnEnd(bytes.NewBufferString(`{"session_id":"s2","cwd":"`+cwd+`"}`)))
+
+	sDir, _ := config.SessionDir(cwd, "s2")
+	turns, _ := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
+	require.Equal(t, storage.TurnStatusDone, turns[0].Status)
+	require.Equal(t, "", turns[0].DiffPath)
 }

@@ -43,19 +43,12 @@ func TestReadInput(t *testing.T) {
 	}
 }
 
-func TestRunWithRecover(t *testing.T) {
-	cases := []struct {
-		name string
-		fn   func() error
-	}{
-		{name: "panic is recovered and returns 0", fn: func() error { panic("boom") }},
-		{name: "error is logged and returns 0", fn: func() error { return errors.New("bad") }},
-	}
+func TestRunWithRecoverReturnsZeroOnPanic(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
+	require.Equal(t, 0, RunWithRecover(func() error { panic("boom") }))
+}
 
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Setenv("XDG_STATE_HOME", t.TempDir())
-			require.Equal(t, 0, RunWithRecover(tc.fn))
-		})
-	}
+func TestRunWithRecoverReturnsZeroOnError(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
+	require.Equal(t, 0, RunWithRecover(func() error { return errors.New("bad") }))
 }
