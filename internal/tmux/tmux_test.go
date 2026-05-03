@@ -8,14 +8,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIsInsideTmuxDetectsEnv(t *testing.T) {
-	t.Setenv("TMUX", "/tmp/tmux-1000/default,123,0")
-	require.True(t, IsInsideTmux())
-}
+func TestIsInsideTmux(t *testing.T) {
+	cases := []struct {
+		name string
+		env  string
+		want bool
+	}{
+		{name: "TMUX env set indicates inside tmux", env: "/tmp/tmux-1000/default,123,0", want: true},
+		{name: "empty TMUX env indicates outside", env: "", want: false},
+	}
 
-func TestIsInsideTmuxFalseWhenUnset(t *testing.T) {
-	t.Setenv("TMUX", "")
-	require.False(t, IsInsideTmux())
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("TMUX", tc.env)
+			require.Equal(t, tc.want, IsInsideTmux())
+		})
+	}
 }
 
 func TestPaneExists(t *testing.T) {
