@@ -8,32 +8,68 @@ import (
 	"github.com/yusei-wy/tmux-agent-log/internal/format"
 )
 
-func TestTSV(t *testing.T) {
-	buf := &bytes.Buffer{}
-	require.NoError(t, format.Write(buf, "tsv", []string{"id", "name"}, [][]string{{"1", "alice"}, {"2", "bob"}}))
-	require.Equal(t, "1\talice\n2\tbob\n", buf.String())
-}
+func TestWrite(t *testing.T) {
+	cases := []struct {
+		name         string
+		format       string
+		columns      []string
+		rows         [][]string
+		want         string   // exact bytes; "" でスキップ
+		wantContains []string // table format のように exact bytes が脆い場合の部分一致
+		wantErr      bool
+	}{
+		{
+			name:    "tsv writes tab-separated rows without header",
+			format:  "tsv",
+			columns: []string{"id", "name"},
+			rows:    [][]string{{"1", "alice"}, {"2", "bob"}},
+			want:    "1\talice\n2\tbob\n",
+		},
+		{
+			name:         "table writes header and aligned rows",
+			format:       "table",
+			columns:      []string{"id", "name"},
+			rows:         [][]string{{"1", "alice"}, {"22", "bob"}},
+			wantContains: []string{"id", "alice"},
+		},
+		{
+			name:    "jsonl writes one json object per line",
+			format:  "jsonl",
+			columns: []string{"id", "name"},
+			rows:    [][]string{{"1", "alice"}, {"2", "bob"}},
+			want:    "{\"id\":\"1\",\"name\":\"alice\"}\n{\"id\":\"2\",\"name\":\"bob\"}\n",
+		},
+		{
+			name:    "json writes single array",
+			format:  "json",
+			columns: []string{"id", "name"},
+			rows:    [][]string{{"1", "alice"}, {"2", "bob"}},
+			want:    "[{\"id\":\"1\",\"name\":\"alice\"},{\"id\":\"2\",\"name\":\"bob\"}]\n",
+		},
+		{
+			name:    "unknown format returns error",
+			format:  "xml",
+			columns: []string{"a"},
+			rows:    [][]string{{"b"}},
+			wantErr: true,
+		},
+	}
 
-func TestTable(t *testing.T) {
-	buf := &bytes.Buffer{}
-	require.NoError(t, format.Write(buf, "table", []string{"id", "name"}, [][]string{{"1", "alice"}, {"22", "bob"}}))
-	require.Contains(t, buf.String(), "id")
-	require.Contains(t, buf.String(), "alice")
-}
-
-func TestJSONL(t *testing.T) {
-	buf := &bytes.Buffer{}
-	require.NoError(t, format.Write(buf, "jsonl", []string{"id", "name"}, [][]string{{"1", "alice"}, {"2", "bob"}}))
-	require.Equal(t, "{\"id\":\"1\",\"name\":\"alice\"}\n{\"id\":\"2\",\"name\":\"bob\"}\n", buf.String())
-}
-
-func TestJSON(t *testing.T) {
-	buf := &bytes.Buffer{}
-	require.NoError(t, format.Write(buf, "json", []string{"id", "name"}, [][]string{{"1", "alice"}, {"2", "bob"}}))
-	require.Equal(t, "[{\"id\":\"1\",\"name\":\"alice\"},{\"id\":\"2\",\"name\":\"bob\"}]\n", buf.String())
-}
-
-func TestUnknownFormatErrors(t *testing.T) {
-	err := format.Write(&bytes.Buffer{}, "xml", []string{"a"}, [][]string{{"b"}})
-	require.Error(t, err)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			err := format.Write(buf, tc.format, tc.columns, tc.rows)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			if tc.want != "" {
+				require.Equal(t, tc.want, buf.String())
+			}
+			for _, s := range tc.wantContains {
+				require.Contains(t, buf.String(), s)
+			}
+		})
+	}
 }
