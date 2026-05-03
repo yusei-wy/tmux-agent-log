@@ -47,6 +47,15 @@ func TestProjectSlug(t *testing.T) {
 	require.Len(t, slug, len("myproject-")+8)
 }
 
+// 同じ basename でも cwd が異なれば slug は衝突しない（hash 設計の主目的）。
+func TestProjectSlugAvoidsBaseNameCollision(t *testing.T) {
+	a := config.ProjectSlug("/Users/alice/src/myproject")
+	b := config.ProjectSlug("/Users/bob/src/myproject")
+	require.NotEqual(t, a, b)
+	require.Contains(t, a, "myproject-")
+	require.Contains(t, b, "myproject-")
+}
+
 func TestSessionDir(t *testing.T) {
 	t.Setenv("XDG_STATE_HOME", "/tmp/xdg-state")
 	got, err := config.SessionDir("/Users/alias/src/myproject", "abc-123")

@@ -2,6 +2,7 @@ package tmux
 
 import (
 	"bytes"
+	"encoding/base64"
 	"os/exec"
 	"strings"
 	"testing"
@@ -30,9 +31,19 @@ func TestSendKeysToValidPane(t *testing.T) {
 	require.Contains(t, string(captured), "hello world")
 }
 
+// TestSendKeysFallsBackOnMissingPane は OSC 52 fallback の出力形式を契約として固定する：
+// ESC ]52;c; <base64-standard> BEL の構造で、payload は元 text と round-trip 一致する。
 func TestSendKeysFallsBackOnMissingPane(t *testing.T) {
 	clip := &bytes.Buffer{}
-	res := sendToPaneWithWriters("", "%9999", "hello", clip, nil)
+	res := sendToPaneWithWriters("", "%9999", "hello world", clip, nil)
 	require.Equal(t, SendResultFallbackClipboard, res.Kind)
-	require.True(t, strings.HasPrefix(clip.String(), "\x1b]52;c;"))
+
+	seq := clip.String()
+	require.True(t, strings.HasPrefix(seq, "\x1b]52;c;"), "missing OSC 52 prefix")
+	require.True(t, strings.HasSuffix(seq, "\x07"), "missing BEL terminator")
+
+	payload := strings.TrimSuffix(strings.TrimPrefix(seq, "\x1b]52;c;"), "\x07")
+	decoded, err := base64.StdEncoding.DecodeString(payload)
+	require.NoError(t, err)
+	require.Equal(t, "hello world", string(decoded))
 }
