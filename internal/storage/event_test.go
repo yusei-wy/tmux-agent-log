@@ -9,32 +9,55 @@ import (
 	"github.com/yusei-wy/tmux-agent-log/internal/storage"
 )
 
-func TestAppendAndReadEvents(t *testing.T) {
-	p := filepath.Join(t.TempDir(), "events.jsonl")
-	require.NoError(t, storage.AppendEvent(p, storage.Event{ID: "e1", TurnID: "t1", Ts: time.Unix(1, 0).UTC(), Tool: "Read", Phase: storage.EventPhasePre}))
-	require.NoError(t, storage.AppendEvent(p, storage.Event{ID: "e2", TurnID: "t1", Ts: time.Unix(2, 0).UTC(), Tool: "Read", Phase: storage.EventPhasePost, Success: true}))
-	got, err := storage.ReadEvents(p, "t1")
-	require.NoError(t, err)
-	require.Len(t, got, 2)
-	require.Equal(t, "e1", got[0].ID)
-	require.Equal(t, "e2", got[1].ID)
-}
+func TestReadEvents(t *testing.T) {
+	cases := []struct {
+		name       string
+		events     []storage.Event
+		filterTurn string
+		wantIDs    []string
+	}{
+		{
+			name: "matching turn id returns events in append order",
+			events: []storage.Event{
+				{ID: "e1", TurnID: "t1", Ts: time.Unix(1, 0).UTC(), Tool: "Read", Phase: storage.EventPhasePre},
+				{ID: "e2", TurnID: "t1", Ts: time.Unix(2, 0).UTC(), Tool: "Read", Phase: storage.EventPhasePost, Success: true},
+			},
+			filterTurn: "t1",
+			wantIDs:    []string{"e1", "e2"},
+		},
+		{
+			name: "non-matching turn ids are filtered out",
+			events: []storage.Event{
+				{ID: "e1", TurnID: "t1"},
+				{ID: "e2", TurnID: "t2"},
+			},
+			filterTurn: "t2",
+			wantIDs:    []string{"e2"},
+		},
+		{
+			name: "empty filter returns all events",
+			events: []storage.Event{
+				{ID: "e1", TurnID: "t1"},
+				{ID: "e2", TurnID: "t2"},
+			},
+			filterTurn: "",
+			wantIDs:    []string{"e1", "e2"},
+		},
+	}
 
-func TestReadEventsFiltersByTurn(t *testing.T) {
-	p := filepath.Join(t.TempDir(), "events.jsonl")
-	require.NoError(t, storage.AppendEvent(p, storage.Event{ID: "e1", TurnID: "t1"}))
-	require.NoError(t, storage.AppendEvent(p, storage.Event{ID: "e2", TurnID: "t2"}))
-	got, err := storage.ReadEvents(p, "t2")
-	require.NoError(t, err)
-	require.Len(t, got, 1)
-	require.Equal(t, "e2", got[0].ID)
-}
-
-func TestReadEventsEmptyTurnIDReturnsAll(t *testing.T) {
-	p := filepath.Join(t.TempDir(), "events.jsonl")
-	require.NoError(t, storage.AppendEvent(p, storage.Event{ID: "e1", TurnID: "t1"}))
-	require.NoError(t, storage.AppendEvent(p, storage.Event{ID: "e2", TurnID: "t2"}))
-	got, err := storage.ReadEvents(p, "")
-	require.NoError(t, err)
-	require.Len(t, got, 2)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := filepath.Join(t.TempDir(), "events.jsonl")
+			for _, e := range tc.events {
+				require.NoError(t, storage.AppendEvent(p, e))
+			}
+			got, err := storage.ReadEvents(p, tc.filterTurn)
+			require.NoError(t, err)
+			ids := make([]string, len(got))
+			for i, e := range got {
+				ids[i] = e.ID
+			}
+			require.Equal(t, tc.wantIDs, ids)
+		})
+	}
 }
