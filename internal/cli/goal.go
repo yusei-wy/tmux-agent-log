@@ -25,12 +25,12 @@ func goalCmd() *cobra.Command {
 			}
 			sDir, err := findSessionDir(sessionID)
 			if err != nil {
-				return err
+				return fmt.Errorf("find session dir: %w", err)
 			}
 			if len(args) == 0 {
 				meta, err := storage.ReadSessionMeta(sDir)
 				if err != nil {
-					return err
+					return fmt.Errorf("read session meta: %w", err)
 				}
 				out := meta.Goal
 				if out == "" {
@@ -39,7 +39,10 @@ func goalCmd() *cobra.Command {
 				_, _ = fmt.Fprintln(cmd.OutOrStdout(), out)
 				return nil
 			}
-			return storage.UpdateSessionGoal(sDir, args[0])
+			if err := storage.UpdateSessionGoal(sDir, args[0]); err != nil {
+				return fmt.Errorf("update session goal: %w", err)
+			}
+			return nil
 		},
 	}
 	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID（必須）")

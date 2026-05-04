@@ -31,7 +31,7 @@ func init() {
 func commentsPath(sessionID string) (string, error) {
 	sDir, err := findSessionDir(sessionID)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("find session dir: %w", err)
 	}
 	return filepath.Join(sDir, "comments.jsonl"), nil
 }
@@ -47,7 +47,7 @@ func commentAddCmd() *cobra.Command {
 			}
 			start, end, err := parseLineRange(line)
 			if err != nil {
-				return err
+				return fmt.Errorf("parse --line: %w", err)
 			}
 			path, err := commentsPath(sessionID)
 			if err != nil {
@@ -62,7 +62,7 @@ func commentAddCmd() *cobra.Command {
 				CreatedAt: time.Now().UTC(),
 			}
 			if err := storage.AppendComment(path, c); err != nil {
-				return err
+				return fmt.Errorf("append comment: %w", err)
 			}
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), c.ID)
 			return nil
@@ -96,7 +96,7 @@ func commentListCmd() *cobra.Command {
 				comments, err = storage.ReadComments(path)
 			}
 			if err != nil {
-				return err
+				return fmt.Errorf("read comments %s: %w", path, err)
 			}
 			out := cmd.OutOrStdout()
 			for _, c := range comments {
@@ -128,7 +128,10 @@ func commentDeleteCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return storage.DeleteComment(path, args[0])
+			if err := storage.DeleteComment(path, args[0]); err != nil {
+				return fmt.Errorf("delete comment %s: %w", args[0], err)
+			}
+			return nil
 		},
 	}
 	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID")
@@ -147,16 +150,16 @@ func commentSendCmd() *cobra.Command {
 			}
 			sDir, err := findSessionDir(sessionID)
 			if err != nil {
-				return err
+				return fmt.Errorf("find session dir: %w", err)
 			}
 			meta, err := storage.ReadSessionMeta(sDir)
 			if err != nil {
-				return err
+				return fmt.Errorf("read session meta: %w", err)
 			}
 			path := filepath.Join(sDir, "comments.jsonl")
 			unsent, err := storage.UnsentComments(path)
 			if err != nil {
-				return err
+				return fmt.Errorf("list unsent comments: %w", err)
 			}
 			if len(unsent) == 0 {
 				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "(no unsent comments)")
@@ -174,12 +177,18 @@ func commentSendCmd() *cobra.Command {
 			}
 			switch res.Kind {
 			case tmux.SendResultOK:
-				return storage.MarkCommentsSent(path, ids, time.Now().UTC())
+				if err := storage.MarkCommentsSent(path, ids, time.Now().UTC()); err != nil {
+					return fmt.Errorf("mark comments sent: %w", err)
+				}
+				return nil
 			case tmux.SendResultFallbackClipboard:
-				fmt.Fprintln(os.Stderr, "tmux pane が見つからないためクリップボード経由で送信しました")
-				return storage.MarkCommentsSent(path, ids, time.Now().UTC())
+				_, _ = fmt.Fprintln(os.Stderr, "tmux pane が見つからないためクリップボード経由で送信しました")
+				if err := storage.MarkCommentsSent(path, ids, time.Now().UTC()); err != nil {
+					return fmt.Errorf("mark comments sent (clipboard fallback): %w", err)
+				}
+				return nil
 			case tmux.SendResultFailed:
-				return fmt.Errorf("send failed: %w", res.Err)
+				return fmt.Errorf("send to tmux pane: %w", res.Err)
 			}
 			return nil
 		},

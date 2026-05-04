@@ -2,6 +2,7 @@ package cli
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -29,14 +30,14 @@ func listSessionsCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			state, err := config.StateDir()
 			if err != nil {
-				return err
+				return fmt.Errorf("resolve state dir: %w", err)
 			}
 			projects := filepath.Join(state, "projects")
 			rows := [][]string{}
 
 			projEntries, err := os.ReadDir(projects)
 			if err != nil && !errors.Is(err, fs.ErrNotExist) {
-				return err
+				return fmt.Errorf("read projects dir %s: %w", projects, err)
 			}
 			for _, p := range projEntries {
 				if !p.IsDir() {
@@ -84,11 +85,11 @@ func listTurnsCmd() *cobra.Command {
 			}
 			sDir, err := findSessionDir(sessionID)
 			if err != nil {
-				return err
+				return fmt.Errorf("find session dir: %w", err)
 			}
 			turns, err := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
 			if err != nil {
-				return err
+				return fmt.Errorf("read turns: %w", err)
 			}
 			rows := make([][]string, 0, len(turns))
 			for _, t := range turns {
@@ -122,7 +123,7 @@ func listCommentsCmd() *cobra.Command {
 			}
 			sDir, err := findSessionDir(sessionID)
 			if err != nil {
-				return err
+				return fmt.Errorf("find session dir: %w", err)
 			}
 			path := filepath.Join(sDir, "comments.jsonl")
 			var comments []storage.Comment
@@ -132,7 +133,7 @@ func listCommentsCmd() *cobra.Command {
 				comments, err = storage.ReadComments(path)
 			}
 			if err != nil {
-				return err
+				return fmt.Errorf("read comments %s: %w", path, err)
 			}
 			rows := make([][]string, 0, len(comments))
 			for _, c := range comments {

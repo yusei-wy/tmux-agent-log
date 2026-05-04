@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -15,19 +16,23 @@ func TurnDiffRelPath(turnID string) string {
 
 func WriteTurnDiff(sDir, turnID string, content []byte) error {
 	if err := os.MkdirAll(filepath.Join(sDir, turnDiffsDir), 0o700); err != nil {
-		return err
+		return fmt.Errorf("create turn diffs dir: %w", err)
 	}
-	return os.WriteFile(filepath.Join(sDir, TurnDiffRelPath(turnID)), content, 0o600)
+	if err := os.WriteFile(filepath.Join(sDir, TurnDiffRelPath(turnID)), content, 0o600); err != nil {
+		return fmt.Errorf("write turn diff: %w", err)
+	}
+	return nil
 }
 
 // ファイル不在は (nil, nil) を返し、呼び出し側が「diff なし」として扱えるようにする。
 func ReadTurnDiff(sDir, turnID string) ([]byte, error) {
-	body, err := os.ReadFile(filepath.Join(sDir, TurnDiffRelPath(turnID)))
+	path := filepath.Join(sDir, TurnDiffRelPath(turnID))
+	body, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return nil, nil
 		}
-		return nil, err
+		return nil, fmt.Errorf("read turn diff %s: %w", path, err)
 	}
 	return body, nil
 }

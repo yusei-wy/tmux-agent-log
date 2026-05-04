@@ -27,7 +27,7 @@ func Write(w io.Writer, fmtName string, columns []string, rows [][]string) error
 func writeTSV(w io.Writer, rows [][]string) error {
 	for _, row := range rows {
 		if _, err := fmt.Fprintln(w, strings.Join(row, "\t")); err != nil {
-			return err
+			return fmt.Errorf("write tsv row: %w", err)
 		}
 	}
 	return nil
@@ -36,27 +36,30 @@ func writeTSV(w io.Writer, rows [][]string) error {
 func writeTable(w io.Writer, columns []string, rows [][]string) error {
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 	if _, err := fmt.Fprintln(tw, strings.Join(columns, "\t")); err != nil {
-		return err
+		return fmt.Errorf("write table header: %w", err)
 	}
 	for _, row := range rows {
 		if _, err := fmt.Fprintln(tw, strings.Join(row, "\t")); err != nil {
-			return err
+			return fmt.Errorf("write table row: %w", err)
 		}
 	}
-	return tw.Flush()
+	if err := tw.Flush(); err != nil {
+		return fmt.Errorf("flush tabwriter: %w", err)
+	}
+	return nil
 }
 
 func writeJSONL(w io.Writer, columns []string, rows [][]string) error {
 	for _, row := range rows {
 		line, err := buildOrderedJSON(columns, row)
 		if err != nil {
-			return err
+			return fmt.Errorf("build jsonl row: %w", err)
 		}
 		if _, err := w.Write(line); err != nil {
-			return err
+			return fmt.Errorf("write jsonl row: %w", err)
 		}
 		if _, err := w.Write([]byte{'\n'}); err != nil {
-			return err
+			return fmt.Errorf("write jsonl newline: %w", err)
 		}
 	}
 	return nil
@@ -64,28 +67,30 @@ func writeJSONL(w io.Writer, columns []string, rows [][]string) error {
 
 func writeJSON(w io.Writer, columns []string, rows [][]string) error {
 	if _, err := w.Write([]byte{'['}); err != nil {
-		return err
+		return fmt.Errorf("write json open bracket: %w", err)
 	}
 	for i, row := range rows {
 		if i > 0 {
 			if _, err := w.Write([]byte{','}); err != nil {
-				return err
+				return fmt.Errorf("write json comma: %w", err)
 			}
 		}
 		line, err := buildOrderedJSON(columns, row)
 		if err != nil {
-			return err
+			return fmt.Errorf("build json row: %w", err)
 		}
 		if _, err := w.Write(line); err != nil {
-			return err
+			return fmt.Errorf("write json row: %w", err)
 		}
 	}
 	if _, err := w.Write([]byte("]\n")); err != nil {
-		return err
+		return fmt.Errorf("write json close bracket: %w", err)
 	}
 	return nil
 }
 
+// buildOrderedJSON は bytes.Buffer に書込むため Write 系のエラーは発生しない。
+// json.Marshal のみ propagate する。
 func buildOrderedJSON(columns []string, row []string) ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteByte('{')
@@ -95,7 +100,7 @@ func buildOrderedJSON(columns []string, row []string) ([]byte, error) {
 		}
 		k, err := json.Marshal(col)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("marshal column %q: %w", col, err)
 		}
 		buf.Write(k)
 		buf.WriteByte(':')
@@ -105,7 +110,7 @@ func buildOrderedJSON(columns []string, row []string) ([]byte, error) {
 		}
 		v, err := json.Marshal(val)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("marshal value for %q: %w", col, err)
 		}
 		buf.Write(v)
 	}

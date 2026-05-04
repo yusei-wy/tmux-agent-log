@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -25,13 +26,13 @@ func errorsListCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			entries, err := errlog.Read()
 			if err != nil {
-				return err
+				return fmt.Errorf("read errors log: %w", err)
 			}
 			out := cmd.OutOrStdout()
 			for _, e := range entries {
 				body, err := json.Marshal(e)
 				if err != nil {
-					return err
+					return fmt.Errorf("marshal error entry: %w", err)
 				}
 				_, _ = out.Write(body)
 				_, _ = out.Write([]byte{'\n'})
@@ -46,7 +47,10 @@ func errorsClearCmd() *cobra.Command {
 		Use:   "clear",
 		Short: "errors.jsonl を削除",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return errlog.Clear()
+			if err := errlog.Clear(); err != nil {
+				return fmt.Errorf("clear errors log: %w", err)
+			}
+			return nil
 		},
 	}
 }

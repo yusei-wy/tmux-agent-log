@@ -2,6 +2,7 @@ package hook
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"path/filepath"
 	"time"
@@ -23,7 +24,7 @@ type turnStartInput struct {
 func RunTurnStart(stdin io.Reader) error {
 	var in turnStartInput
 	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
-		return err
+		return fmt.Errorf("decode turn_start input: %w", err)
 	}
 	if in.SessionID == "" || in.Cwd == "" {
 		return nil
@@ -31,12 +32,12 @@ func RunTurnStart(stdin io.Reader) error {
 
 	sDir, err := config.SessionDir(in.Cwd, in.SessionID)
 	if err != nil {
-		return err
+		return fmt.Errorf("resolve session dir: %w", err)
 	}
 
 	meta, err := storage.ReadSessionMeta(sDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("read session meta: %w", err)
 	}
 
 	headSHA := ""

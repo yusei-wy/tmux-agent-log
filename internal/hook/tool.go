@@ -2,6 +2,7 @@ package hook
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"path/filepath"
 	"time"
@@ -35,7 +36,7 @@ func RunToolPost(stdin io.Reader) error {
 func runToolHook(stdin io.Reader, phase storage.EventPhase) error {
 	var in toolHookInput
 	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
-		return err
+		return fmt.Errorf("decode tool hook input: %w", err)
 	}
 	if in.SessionID == "" || in.Cwd == "" {
 		return nil
@@ -43,14 +44,14 @@ func runToolHook(stdin io.Reader, phase storage.EventPhase) error {
 
 	sDir, err := config.SessionDir(in.Cwd, in.SessionID)
 	if err != nil {
-		return err
+		return fmt.Errorf("resolve session dir: %w", err)
 	}
 
 	turnID := in.TurnID
 	if turnID == "" {
 		latest, err := storage.LatestOpenTurnID(filepath.Join(sDir, "turns.jsonl"))
 		if err != nil {
-			return err
+			return fmt.Errorf("find latest open turn: %w", err)
 		}
 		turnID = latest
 	}

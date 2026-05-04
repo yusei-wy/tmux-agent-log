@@ -2,6 +2,7 @@ package errlog
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"time"
@@ -13,7 +14,7 @@ import (
 func Record(component, event, sessionID, errMsg string) error {
 	path, err := config.ErrorsPath()
 	if err != nil {
-		return err
+		return fmt.Errorf("resolve errors path: %w", err)
 	}
 	entry := storage.ErrEntry{
 		Ts:          time.Now().UTC(),
@@ -28,7 +29,7 @@ func Record(component, event, sessionID, errMsg string) error {
 func Read() ([]storage.ErrEntry, error) {
 	path, err := config.ErrorsPath()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("resolve errors path: %w", err)
 	}
 	var out []storage.ErrEntry
 	err = storage.ReadJSONL(path, func(raw []byte) error {
@@ -40,7 +41,7 @@ func Read() ([]storage.ErrEntry, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read errors log: %w", err)
 	}
 	return out, nil
 }
@@ -48,11 +49,11 @@ func Read() ([]storage.ErrEntry, error) {
 func Clear() error {
 	path, err := config.ErrorsPath()
 	if err != nil {
-		return err
+		return fmt.Errorf("resolve errors path: %w", err)
 	}
 	for _, p := range []string{path, path + ".lock"} {
 		if err := os.Remove(p); err != nil && !errors.Is(err, fs.ErrNotExist) {
-			return err
+			return fmt.Errorf("remove %s: %w", p, err)
 		}
 	}
 	return nil

@@ -42,14 +42,17 @@ func clearCmd() *cobra.Command {
 			if sessionID != "" {
 				dir, err := findSessionDir(sessionID)
 				if err != nil {
-					return err
+					return fmt.Errorf("find session dir: %w", err)
 				}
-				return os.RemoveAll(dir)
+				if err := os.RemoveAll(dir); err != nil {
+					return fmt.Errorf("remove session dir %s: %w", dir, err)
+				}
+				return nil
 			}
 
 			state, err := config.StateDir()
 			if err != nil {
-				return err
+				return fmt.Errorf("resolve state dir: %w", err)
 			}
 			projects := filepath.Join(state, "projects")
 
@@ -57,12 +60,15 @@ func clearCmd() *cobra.Command {
 				if !confirmAll(cmd) {
 					return errors.New("確認されなかった")
 				}
-				return os.RemoveAll(projects)
+				if err := os.RemoveAll(projects); err != nil {
+					return fmt.Errorf("remove projects dir %s: %w", projects, err)
+				}
+				return nil
 			}
 
 			d, err := parseDuration(olderThan)
 			if err != nil {
-				return err
+				return fmt.Errorf("parse --older-than: %w", err)
 			}
 			cutoff := time.Now().Add(-d)
 			projEntries, err := os.ReadDir(projects)
@@ -70,7 +76,7 @@ func clearCmd() *cobra.Command {
 				if os.IsNotExist(err) {
 					return nil
 				}
-				return err
+				return fmt.Errorf("read projects dir %s: %w", projects, err)
 			}
 			for _, p := range projEntries {
 				sessDir := filepath.Join(projects, p.Name(), "sessions")
@@ -88,7 +94,7 @@ func clearCmd() *cobra.Command {
 						continue
 					}
 					if err := os.RemoveAll(full); err != nil {
-						return err
+						return fmt.Errorf("remove session dir %s: %w", full, err)
 					}
 					_, _ = fmt.Fprintln(cmd.OutOrStdout(), "removed", full)
 				}

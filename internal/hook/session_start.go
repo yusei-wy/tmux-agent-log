@@ -2,6 +2,7 @@ package hook
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"time"
@@ -20,7 +21,7 @@ type sessionStartInput struct {
 func RunSessionStart(stdin io.Reader) error {
 	var in sessionStartInput
 	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
-		return err
+		return fmt.Errorf("decode session_start input: %w", err)
 	}
 	if in.SessionID == "" || in.Cwd == "" {
 		return nil
@@ -28,7 +29,7 @@ func RunSessionStart(stdin io.Reader) error {
 
 	sDir, err := config.SessionDir(in.Cwd, in.SessionID)
 	if err != nil {
-		return err
+		return fmt.Errorf("resolve session dir: %w", err)
 	}
 
 	meta := storage.SessionMeta{

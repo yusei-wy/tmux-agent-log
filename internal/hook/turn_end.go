@@ -2,6 +2,7 @@ package hook
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"path/filepath"
 	"strings"
@@ -20,7 +21,7 @@ type turnEndInput struct {
 func RunTurnEnd(stdin io.Reader) error {
 	var in turnEndInput
 	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
-		return err
+		return fmt.Errorf("decode turn_end input: %w", err)
 	}
 	if in.SessionID == "" || in.Cwd == "" {
 		return nil
@@ -28,18 +29,18 @@ func RunTurnEnd(stdin io.Reader) error {
 
 	sDir, err := config.SessionDir(in.Cwd, in.SessionID)
 	if err != nil {
-		return err
+		return fmt.Errorf("resolve session dir: %w", err)
 	}
 
 	meta, err := storage.ReadSessionMeta(sDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("read session meta: %w", err)
 	}
 
 	turnsPath := filepath.Join(sDir, "turns.jsonl")
 	turns, err := storage.ReadTurns(turnsPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("read turns %s: %w", turnsPath, err)
 	}
 
 	var openTurn *storage.Turn
@@ -63,7 +64,7 @@ func RunTurnEnd(stdin io.Reader) error {
 		diff, err := git.DiffSince(in.Cwd, openTurn.HeadSHAPre)
 		if err == nil && strings.TrimSpace(diff) != "" {
 			if err := storage.WriteTurnDiff(sDir, openTurn.ID, []byte(diff)); err != nil {
-				return err
+				return fmt.Errorf("write turn diff %s: %w", openTurn.ID, err)
 			}
 			close.DiffPath = storage.TurnDiffRelPath(openTurn.ID)
 		}

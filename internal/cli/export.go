@@ -29,15 +29,15 @@ func exportCmd() *cobra.Command {
 			}
 			sDir, err := findSessionDir(sessionID)
 			if err != nil {
-				return err
+				return fmt.Errorf("find session dir: %w", err)
 			}
 			meta, err := storage.ReadSessionMeta(sDir)
 			if err != nil {
-				return err
+				return fmt.Errorf("read session meta: %w", err)
 			}
 			turns, err := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
 			if err != nil {
-				return err
+				return fmt.Errorf("read turns: %w", err)
 			}
 
 			out := cmd.OutOrStdout()
@@ -59,7 +59,7 @@ func exportCmd() *cobra.Command {
 				if t.DiffPath != "" {
 					body, err := storage.ReadTurnDiff(sDir, t.ID)
 					if err != nil {
-						return err
+						return fmt.Errorf("read turn diff %s: %w", t.ID, err)
 					}
 					if body != nil {
 						_, _ = fmt.Fprintln(out, "\n```diff")

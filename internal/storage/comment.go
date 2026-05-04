@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"time"
 )
@@ -23,7 +24,7 @@ func MarkCommentsSent(path string, ids []string, ts time.Time) error {
 	for _, id := range ids {
 		rec := commentRecord{Comment: Comment{ID: id}, SetSent: ts}
 		if err := AppendJSONL(path, rec); err != nil {
-			return err
+			return fmt.Errorf("mark comment %s sent: %w", id, err)
 		}
 	}
 	return nil
@@ -69,7 +70,7 @@ func ReadComments(path string) ([]Comment, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read comments %s: %w", path, err)
 	}
 
 	out := make([]Comment, 0, len(merged))
@@ -88,7 +89,7 @@ func ReadComments(path string) ([]Comment, error) {
 func UnsentComments(path string) ([]Comment, error) {
 	all, err := ReadComments(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("list unsent comments: %w", err)
 	}
 	out := make([]Comment, 0, len(all))
 	for _, c := range all {

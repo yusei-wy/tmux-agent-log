@@ -2,6 +2,7 @@ package cli
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -14,7 +15,7 @@ import (
 func findSessionDir(sessionID string) (string, error) {
 	state, err := config.StateDir()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("resolve state dir: %w", err)
 	}
 	projects := filepath.Join(state, "projects")
 	entries, err := os.ReadDir(projects)
@@ -22,7 +23,7 @@ func findSessionDir(sessionID string) (string, error) {
 		if errors.Is(err, fs.ErrNotExist) {
 			return "", os.ErrNotExist
 		}
-		return "", err
+		return "", fmt.Errorf("read projects dir %s: %w", projects, err)
 	}
 	for _, e := range entries {
 		if !e.IsDir() {

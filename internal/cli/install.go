@@ -36,7 +36,7 @@ func installHooksCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path, err := claudeSettingsPath()
 			if err != nil {
-				return err
+				return fmt.Errorf("resolve claude settings path: %w", err)
 			}
 			bin := resolveBinName()
 			if dry {
@@ -45,7 +45,10 @@ func installHooksCmd() *cobra.Command {
 				}
 				return nil
 			}
-			return installHooksTo(path, bin)
+			if err := installHooksTo(path, bin); err != nil {
+				return fmt.Errorf("install hooks: %w", err)
+			}
+			return nil
 		},
 	}
 	cmd.Flags().BoolVar(&dry, "dry", false, "書込まずに dry-run")
@@ -59,9 +62,12 @@ func uninstallHooksCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path, err := claudeSettingsPath()
 			if err != nil {
-				return err
+				return fmt.Errorf("resolve claude settings path: %w", err)
 			}
-			return uninstallHooksFrom(path, resolveBinName())
+			if err := uninstallHooksFrom(path, resolveBinName()); err != nil {
+				return fmt.Errorf("uninstall hooks: %w", err)
+			}
+			return nil
 		},
 	}
 }
@@ -88,14 +94,14 @@ func loadSettings(path string) (map[string]any, error) {
 		if errors.Is(err, fs.ErrNotExist) {
 			return map[string]any{}, nil
 		}
-		return nil, err
+		return nil, fmt.Errorf("read claude settings %s: %w", path, err)
 	}
 	if len(strings.TrimSpace(string(body))) == 0 {
 		return map[string]any{}, nil
 	}
 	var m map[string]any
 	if err := json.Unmarshal(body, &m); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse claude settings %s: %w", path, err)
 	}
 	if m == nil {
 		m = map[string]any{}
@@ -106,16 +112,19 @@ func loadSettings(path string) (map[string]any, error) {
 func saveSettings(path string, m map[string]any) error {
 	body, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal claude settings: %w", err)
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return err
+		return fmt.Errorf("create claude settings dir: %w", err)
 	}
 	tmp := path + ".tmp"
 	if err := os.WriteFile(tmp, body, 0o600); err != nil {
-		return err
+		return fmt.Errorf("write claude settings tmp %s: %w", tmp, err)
 	}
-	return os.Rename(tmp, path)
+	if err := os.Rename(tmp, path); err != nil {
+		return fmt.Errorf("rename claude settings tmp to %s: %w", path, err)
+	}
+	return nil
 }
 
 func installHooksTo(path, bin string) error {

@@ -26,11 +26,11 @@ func showSessionCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			sDir, err := findSessionDir(args[0])
 			if err != nil {
-				return err
+				return fmt.Errorf("find session dir: %w", err)
 			}
 			meta, err := storage.ReadSessionMeta(sDir)
 			if err != nil {
-				return err
+				return fmt.Errorf("read session meta: %w", err)
 			}
 			return format.JSONIndent(cmd.OutOrStdout(), meta)
 		},
@@ -50,11 +50,11 @@ func showTurnCmd() *cobra.Command {
 			}
 			sDir, err := findSessionDir(sessionID)
 			if err != nil {
-				return err
+				return fmt.Errorf("find session dir: %w", err)
 			}
 			turns, err := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
 			if err != nil {
-				return err
+				return fmt.Errorf("read turns: %w", err)
 			}
 			var found *storage.Turn
 			for i := range turns {
@@ -67,12 +67,12 @@ func showTurnCmd() *cobra.Command {
 				return fmt.Errorf("turn %q が見つからない", args[0])
 			}
 			if err := format.JSONIndent(cmd.OutOrStdout(), found); err != nil {
-				return err
+				return fmt.Errorf("write turn json: %w", err)
 			}
 			if withDiff && found.DiffPath != "" {
 				body, err := storage.ReadTurnDiff(sDir, found.ID)
 				if err != nil {
-					return err
+					return fmt.Errorf("read turn diff %s: %w", found.ID, err)
 				}
 				if body == nil {
 					return fmt.Errorf("diff ファイルが見つからない: %s", storage.TurnDiffRelPath(found.ID))
@@ -97,40 +97,40 @@ func showDiffCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			sDir, err := findSessionDir(args[0])
 			if err != nil {
-				return err
+				return fmt.Errorf("find session dir: %w", err)
 			}
 			meta, err := storage.ReadSessionMeta(sDir)
 			if err != nil {
-				return err
+				return fmt.Errorf("read session meta: %w", err)
 			}
 			switch base {
 			case "session":
 				diff, err := git.DiffSince(meta.Cwd, meta.BaseSHA)
 				if err != nil {
-					return err
+					return fmt.Errorf("git diff since %s: %w", meta.BaseSHA, err)
 				}
-				_, err = fmt.Fprint(cmd.OutOrStdout(), diff)
-				return err
+				_, _ = fmt.Fprint(cmd.OutOrStdout(), diff)
+				return nil
 			case "turn":
 				if turnID == "" {
 					return errors.New("--base=turn のときは --turn が必須")
 				}
 				body, err := storage.ReadTurnDiff(sDir, turnID)
 				if err != nil {
-					return err
+					return fmt.Errorf("read turn diff %s: %w", turnID, err)
 				}
 				if body == nil {
 					return nil
 				}
-				_, err = cmd.OutOrStdout().Write(body)
-				return err
+				_, _ = cmd.OutOrStdout().Write(body)
+				return nil
 			case "main":
 				diff, err := git.Run(meta.Cwd, "diff", "--no-color", "-U3", "main", "--")
 				if err != nil {
-					return err
+					return fmt.Errorf("git diff main: %w", err)
 				}
-				_, err = fmt.Fprint(cmd.OutOrStdout(), diff)
-				return err
+				_, _ = fmt.Fprint(cmd.OutOrStdout(), diff)
+				return nil
 			default:
 				return fmt.Errorf("--base は session|turn|main のいずれか（got %q）", base)
 			}

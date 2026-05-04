@@ -2,6 +2,7 @@ package format
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 )
 
@@ -9,11 +10,13 @@ import (
 func JSONIndent(w io.Writer, v any) error {
 	body, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal json: %w", err)
 	}
 	if _, err := w.Write(body); err != nil {
-		return err
+		return fmt.Errorf("write json: %w", err)
 	}
-	_, err = w.Write([]byte{'\n'})
-	return err
+	if _, err := w.Write([]byte{'\n'}); err != nil {
+		return fmt.Errorf("write json newline: %w", err)
+	}
+	return nil
 }
