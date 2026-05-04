@@ -53,6 +53,5 @@ func runTmux(socket string, args ...string) error {
 		full = append(full, "-S", socket)
 	}
 	full = append(full, args...)
-	//nolint:gosec // tmux の引数はラッパー内で組み立てる variable な配列。設計上の意図。
 	return exec.Command("tmux", full...).Run()
 }

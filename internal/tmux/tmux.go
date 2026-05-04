@@ -30,7 +30,6 @@ func paneExistsWithSocket(socket, paneID string) (bool, error) {
 	}
 	args = append(args, "list-panes", "-a", "-F", "#{pane_id}")
 
-	//nolint:gosec // tmux の引数はラッパー内で組み立てる variable な配列。設計上の意図。
 	cmd := exec.Command("tmux", args...)
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout

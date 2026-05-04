@@ -3,7 +3,6 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -58,9 +57,11 @@ func exportCmd() *cobra.Command {
 					_, _ = fmt.Fprintf(out, "- prompt: %s\n", t.UserPromptPreview)
 				}
 				if t.DiffPath != "" {
-					//nolint:gosec // sDir はユーザーのセッションディレクトリ、t.DiffPath は同セッション内の自前 storage が書いた相対パス。設計上 variable。
-					body, err := os.ReadFile(filepath.Join(sDir, t.DiffPath))
-					if err == nil {
+					body, err := storage.ReadTurnDiff(sDir, t.ID)
+					if err != nil {
+						return err
+					}
+					if body != nil {
 						_, _ = fmt.Fprintln(out, "\n```diff")
 						_, _ = out.Write(body)
 						_, _ = fmt.Fprintln(out, "```")

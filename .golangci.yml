@@ -46,6 +46,12 @@ linters:
           - gosec
           - errcheck
           - unparam
+      # 信頼境界: adapter 層は外部リソース (file system / git / tmux) を呼ぶのが
+      # 設計上の責務。G204 (subprocess) と G304 (file inclusion) は構造的に
+      # false positive となるため、この層に限ってルールごと除外する。
+      - path: internal/(storage|git|tmux)/
+        linters:
+          - gosec
 
 formatters:
   enable:

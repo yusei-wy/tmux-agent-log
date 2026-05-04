@@ -1,6 +1,6 @@
 ---
 name: go-packaging
-description: Use when designing, creating, modifying, or refactoring Go package structure in this project. このプロジェクトのパッケージ設計規約 — anti-pattern（util/common/helpers 禁止、層分け禁止）、cli/ の責務（cobra 配線専任、長い RunE は同一パッケージ内 runX 関数へ外出し）、format/ への表示整形集約、新規パッケージを切る判断基準を含む。TRIGGER when: internal/ 配下に新ファイルを作る / 新パッケージを検討する / 既存パッケージを refactor する / import を整理する / どこにコードを置くか迷う / 共通ヘルパーを切り出したくなる / cli/ サブコマンドを追加・修正する。
+description: Use when designing, creating, modifying, or refactoring Go package structure in this project. このプロジェクトのパッケージ設計規約 — anti-pattern（util/common/helpers 禁止、層分け禁止）、cli/ の責務（cobra 配線専任、長い RunE は同一パッケージ内 runX 関数へ外出し）、format/ への表示整形集約、新規パッケージを切る判断基準、依存方向（cli → hook → adapter）と信頼境界（os.ReadFile / os.WriteFile / exec.Command は adapter 層のみ）を含む。TRIGGER when: internal/ 配下に新ファイルを作る / 新パッケージを検討する / 既存パッケージを refactor する / import を整理する / どこにコードを置くか迷う / 共通ヘルパーを切り出したくなる / cli/ サブコマンドを追加・修正する / `os.ReadFile` / `os.WriteFile` / `os.OpenFile` / `exec.Command` を書こうとする（信頼境界の話）。
 ---
 
 # パッケージ設計規約（このプロジェクト）
@@ -34,6 +34,33 @@ internal/
   tmux/                        tmux send-keys + OSC 52 fallback
   errlog/                      errors.jsonl の record / read / clear
 ```
+
+## 依存方向と信頼境界
+
+```
+cli ──> hook ──> {git, tmux, storage}
+  └──────────────^
+```
+
+- **入口 adapter**: `cli`（cobra 配線、ユーザー対話）
+- **use case**: `hook`（session/turn/tool の業務ロジック）
+- **出口 adapter（信頼境界）**: `git`, `tmux`, `storage` — OS / 外部プロセスを叩く責任を持つ唯一の場所
+
+ルール:
+
+- `cli` は `hook` と adapter のどちらを呼んでもよい（薄い CRUD 系コマンドは hook を経由しない）
+- `hook` は adapter を呼ぶ。`cli` を import しない
+- adapter（`git` / `tmux` / `storage`）は他の internal パッケージを import しない（葉ノード）
+- **`os.ReadFile` / `os.WriteFile` / `os.OpenFile` / `exec.Command` は adapter の中でのみ呼ぶ**。cli/hook で必要になったら、対応する関数を adapter 側に切り出す（例: `storage.WriteTurnDiff` / `storage.ReadTurnDiff`）
+- 例外は `cli/install.go`（`~/.claude/settings.json` 編集）と `cli/config_cmd.go`（`$EDITOR` 起動）のみ。新規追加時は理由付きで `//nolint:gosec` を残す
+
+`gosec` G204/G304 は adapter 層に対しては `.golangci.yml` で除外している（信頼境界として明示）。新たに `os.ReadFile` を cli/hook に書きたくなったら、まず「これは adapter に切り出すべきでは?」を問う。
+
+判断のための問い:
+
+1. **「外部リソース（file system / git / tmux）を触っているか?」** → Yes なら adapter の中で書く
+2. **「同じパターンが他箇所にもあるか?」** → 1 箇所だけなら呼び出し元に置いても可。2 箇所目が出たら adapter 関数として切り出す
+3. **「`Turn.DiffPath` のような storage 内部規約に依存するか?」** → Yes なら呼び出し側に path 組み立てロジックを漏らさない（storage 関数の引数は turnID 等のドメイン ID にする）
 
 ## cli パッケージの規約
 

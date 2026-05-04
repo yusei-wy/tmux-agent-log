@@ -3,7 +3,6 @@ package hook
 import (
 	"encoding/json"
 	"io"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -63,15 +62,10 @@ func RunTurnEnd(stdin io.Reader) error {
 	if meta.GitTracked {
 		diff, err := git.DiffSince(in.Cwd, openTurn.HeadSHAPre)
 		if err == nil && strings.TrimSpace(diff) != "" {
-			diffsDir := filepath.Join(sDir, "diffs")
-			if err := os.MkdirAll(diffsDir, 0o700); err != nil {
+			if err := storage.WriteTurnDiff(sDir, openTurn.ID, []byte(diff)); err != nil {
 				return err
 			}
-			rel := filepath.Join("diffs", openTurn.ID+".patch")
-			if err := os.WriteFile(filepath.Join(sDir, rel), []byte(diff), 0o600); err != nil {
-				return err
-			}
-			close.DiffPath = rel
+			close.DiffPath = storage.TurnDiffRelPath(openTurn.ID)
 		}
 		if sha, err := git.HeadSHA(in.Cwd); err == nil {
 			close.HeadSHA = sha

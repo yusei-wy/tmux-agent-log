@@ -3,7 +3,6 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -71,10 +70,12 @@ func showTurnCmd() *cobra.Command {
 				return err
 			}
 			if withDiff && found.DiffPath != "" {
-				//nolint:gosec // sDir はユーザーのセッションディレクトリ、found.DiffPath は同セッションの自前 storage が書いた相対パス。設計上 variable。
-				body, err := os.ReadFile(filepath.Join(sDir, found.DiffPath))
+				body, err := storage.ReadTurnDiff(sDir, found.ID)
 				if err != nil {
 					return err
+				}
+				if body == nil {
+					return fmt.Errorf("diff ファイルが見つからない: %s", storage.TurnDiffRelPath(found.ID))
 				}
 				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "--- diff ---")
 				_, _ = cmd.OutOrStdout().Write(body)
@@ -114,13 +115,12 @@ func showDiffCmd() *cobra.Command {
 				if turnID == "" {
 					return errors.New("--base=turn のときは --turn が必須")
 				}
-				//nolint:gosec // sDir はユーザーのセッションディレクトリ、turnID は --turn フラグで指定された ID。設計上 variable。
-				body, err := os.ReadFile(filepath.Join(sDir, "diffs", turnID+".patch"))
+				body, err := storage.ReadTurnDiff(sDir, turnID)
 				if err != nil {
-					if errors.Is(err, os.ErrNotExist) {
-						return nil
-					}
 					return err
+				}
+				if body == nil {
+					return nil
 				}
 				_, err = cmd.OutOrStdout().Write(body)
 				return err

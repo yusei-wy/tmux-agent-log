@@ -20,7 +20,6 @@ func (e *Error) Error() string {
 
 func Run(dir string, args ...string) (string, error) {
 	full := append([]string{"-C", dir}, args...)
-	//nolint:gosec // git の引数は呼び出し側が組み立てる。ラッパーとして variable な引数を受けるのは設計上の意図。
 	cmd := exec.Command("git", full...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
