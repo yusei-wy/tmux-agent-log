@@ -57,7 +57,7 @@ func clearCmd() *cobra.Command {
 			projects := filepath.Join(state, "projects")
 
 			if all {
-				if !confirmAll(cmd) {
+				if !confirmClearAll(cmd) {
 					return errors.New("確認されなかった")
 				}
 				if err := os.RemoveAll(projects); err != nil {
@@ -66,7 +66,7 @@ func clearCmd() *cobra.Command {
 				return nil
 			}
 
-			d, err := parseDuration(olderThan)
+			d, err := parseDurationWithDays(olderThan)
 			if err != nil {
 				return fmt.Errorf("parse --older-than: %w", err)
 			}
@@ -108,7 +108,7 @@ func clearCmd() *cobra.Command {
 	return cmd
 }
 
-func parseDuration(s string) (time.Duration, error) {
+func parseDurationWithDays(s string) (time.Duration, error) {
 	if strings.HasSuffix(s, "d") {
 		days, err := strconv.Atoi(strings.TrimSuffix(s, "d"))
 		if err != nil {
@@ -119,7 +119,7 @@ func parseDuration(s string) (time.Duration, error) {
 	return time.ParseDuration(s)
 }
 
-func confirmAll(cmd *cobra.Command) bool {
+func confirmClearAll(cmd *cobra.Command) bool {
 	if os.Getenv("TMUX_AGENT_LOG_ASSUME_YES") == "1" {
 		return true
 	}

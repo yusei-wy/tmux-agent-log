@@ -16,11 +16,11 @@ func init() {
 		Use:   "hook",
 		Short: "Claude Code hook エンドポイント（agent から呼ばれる、人間は直接使わない）",
 	}
-	hookCmd.AddCommand(mkHook("session-start", hook.RunSessionStart))
-	hookCmd.AddCommand(mkHook("turn-start", hook.RunTurnStart))
-	hookCmd.AddCommand(mkHook("tool-pre", hook.RunToolPre))
-	hookCmd.AddCommand(mkHook("tool-post", hook.RunToolPost))
-	hookCmd.AddCommand(mkHook("turn-end", hook.RunTurnEnd))
+	hookCmd.AddCommand(makeHookCmd("session-start", hook.RunSessionStart))
+	hookCmd.AddCommand(makeHookCmd("turn-start", hook.RunTurnStart))
+	hookCmd.AddCommand(makeHookCmd("tool-pre", hook.RunToolPre))
+	hookCmd.AddCommand(makeHookCmd("tool-post", hook.RunToolPost))
+	hookCmd.AddCommand(makeHookCmd("turn-end", hook.RunTurnEnd))
 	rootCmd.AddCommand(hookCmd)
 }
 
@@ -41,7 +41,7 @@ func runWithRecover(fn func() error) int {
 	return 0
 }
 
-func mkHook(name string, runner func(io.Reader) error) *cobra.Command {
+func makeHookCmd(name string, runner func(io.Reader) error) *cobra.Command {
 	return &cobra.Command{
 		Use: name,
 		RunE: func(cmd *cobra.Command, args []string) error {

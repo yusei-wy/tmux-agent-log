@@ -45,7 +45,7 @@ func commentAddCmd() *cobra.Command {
 			if sessionID == "" || file == "" || line == "" || text == "" {
 				return errors.New("--session/--file/--line/--text すべて必須")
 			}
-			start, end, err := parseLineRange(line)
+			start, end, err := parseCommentLineRange(line)
 			if err != nil {
 				return fmt.Errorf("parse --line: %w", err)
 			}
@@ -198,7 +198,7 @@ func commentSendCmd() *cobra.Command {
 	return cmd
 }
 
-func parseLineRange(s string) (int, int, error) {
+func parseCommentLineRange(s string) (int, int, error) {
 	if !strings.Contains(s, "-") {
 		n, err := strconv.Atoi(s)
 		if err != nil {

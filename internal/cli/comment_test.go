@@ -8,7 +8,7 @@ import (
 	"github.com/yusei-wy/tmux-agent-log/internal/cli"
 )
 
-func TestParseLineRange(t *testing.T) {
+func TestParseCommentLineRange(t *testing.T) {
 	cases := []struct {
 		name    string
 		in      string
@@ -24,7 +24,7 @@ func TestParseLineRange(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			s, e, err := cli.ParseLineRange(tc.in)
+			s, e, err := cli.ParseCommentLineRange(tc.in)
 			if tc.wantErr {
 				require.Error(t, err)
 				return
