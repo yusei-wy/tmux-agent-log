@@ -1,10 +1,19 @@
-# tmux-agent-log Plan 1: コア (MVP) 実装計画
+# tmux-agent-log Plan 1: v0.1 Core (CLI コア) 実装計画
 
 > **エージェント実装者向け:** 必須サブスキル: `superpowers:subagent-driven-development`（推奨）または `superpowers:executing-plans` を使ってタスク単位で実装する。各 step はチェックボックス（`- [ ]`）で進捗管理する。
 
-**目的:** `tmux-agent-log` の CLI コアを構築する。Claude Code の turn を構造化 JSONL として記録し、turn 境界で git diff のスナップショットを取り、CLI サブコマンド経由でレビュー / コメント / Claude への送り返しを可能にする。Go 単一バイナリ、OSS リリース可能な状態。
+**位置づけ:** spec §0.4 の Version 戦略における **v0.1 (Core)** のうち、**CLI コア部分** を構築する Plan。v0.1 の完成には Plan 2（TUI + tail）が必要。
 
-**アーキテクチャ:** Cobra サブコマンドを持つ単一バイナリ。hook サブコマンドは Claude Code hook の JSON を stdin から読み、JSONL に追記する（必ず exit 0）。ユーザー向けサブコマンドは JSONL ストアとセッションの git リポジトリを読み、machine-readable な出力（tsv / jsonl / json / table）を生成する。TUI と tail viewer は Plan 2 へ、examples とリリース基盤は Plan 3 へ先送り。
+**目的:** Claude Code の turn を構造化 JSONL として記録し、turn 境界で git diff のスナップショットを取り、CLI サブコマンド経由でレビュー / コメント / Claude への送り返しを可能にする。Go 単一バイナリ、OSS リリース可能な状態。
+
+**v0.1 全体の完了条件**（spec §0.3）:
+1. 構造化保存（hook 経由 JSONL 永続化）
+2. 構造化表示（TUI + `tail` + 各種 read 系 CLI）
+3. コメント送信（`s` で send-keys、OSC 52 fallback）
+
+**本計画 (Plan 1) の責任範囲:** 1 + 3、および 2 のうち **read 系 CLI**（`list-*` / `show-*` / `show-diff` / `--format` 各種）。TUI と tail viewer は Plan 2 が担当。
+
+**アーキテクチャ:** Cobra サブコマンドを持つ単一バイナリ。hook サブコマンドは Claude Code hook の JSON を stdin から読み、JSONL に追記する（必ず exit 0）。ユーザー向けサブコマンドは JSONL ストアとセッションの git リポジトリを読み、machine-readable な出力（tsv / jsonl / json / table）を生成する。
 
 **技術スタック:**
 - **Go 1.26+**
@@ -15,14 +24,34 @@
 - `github.com/stretchr/testify` — assertion
 - 外部ランタイム: `tmux` 3.2+、`git`
 
-**ソース spec:** [`docs/superpowers/specs/2026-04-23-tmux-agent-log-design.md`](../specs/2026-04-23-tmux-agent-log-design.md)
+**ソース spec:** [`docs/superpowers/specs/2026-04-23-tmux-agent-log-design.md`](../specs/2026-04-23-tmux-agent-log-design.md) — 特に §0.4 (Version 戦略) / §11.1 (v0.1 含める) / §5.0 (引き算の哲学)
 
-**この計画のスコープ外**（spec §11 MVP 参照）:
-- TUI（`tmux-agent-log tui`）— Plan 2
-- fsnotify ベースの tail viewer — Plan 2
-- `blame.json` / `liveness.json` の計算 — Plan 2
-- syntax highlighting（chroma）— Plan 2
-- `examples/`、GitHub Actions CI、GoReleaser — Plan 3
+**この計画 (Plan 1) のスコープ外:**
+
+*v0.1 の残り部分（Plan 2 で実装）:*
+- TUI（`tmux-agent-log tui`）: timeline / diff [累積 read-only] / overview の 3 タブ
+- tail viewer（`tmux-agent-log tail`）
+- 最低限の diff 色分け（追加 = 緑、削除 = 赤、context = 通常）
+
+*v0.2（後続 Plan）— spec §11.2 / §5.0:*
+- per-turn diff + liveness マーカー
+- `vs-main` モード
+- `blame.json` / `liveness.json` の増分更新
+- line → turn blame footer + intent
+
+*v0.3（後続 Plan）:*
+- overview タブ（goal 横断）の本格実装
+- `narrate` CLI（goal 単位の変更ストーリー Markdown 出力）
+- chroma による言語別 syntax highlight
+
+*配布物（Plan 5、最後）:*
+- `examples/tmux/` / `examples/fzf/`
+- GitHub Actions CI（Ubuntu + macOS）、GoReleaser、Homebrew tap
+
+*永久 non-goal*（spec §11.3 / §5.0 引き算の哲学）:
+- `R` Refine（再生成依頼動線）— コメントによる言語化を強制
+- `E` 直接編集 / hunk revert / discard 系 — git の責務に委譲
+- AI コメント生成補助 — コメント自体はユーザーの思考
 
 **記述言語:** 本計画で作成するコード・コメント・テスト・コミットメッセージ・ドキュメントはすべて **日本語** で記述する。ただし Go のテスト名（`TestXxx`）・関数名・型名など言語仕様上英語が必要な箇所は英語のままとする。
 
@@ -2067,9 +2096,14 @@ func TestUninstallRemovesOurHooks(t *testing.T) {
 
 ## 次の Plan
 
-- **Plan 2（TUI）:** bubbletea ベースの対話 UI（timeline / diff / overview タブ）、chroma syntax highlighting、`blame.json` + `liveness.json` の計算、`tail` + `tui` サブコマンド
-- **Plan 3（リリース）:** `examples/`（tmux / fzf / shell パターン）、GitHub Actions CI（Ubuntu + macOS）、Darwin/Linux × amd64/arm64 の GoReleaser、Homebrew tap、リリースワークフロー
+spec §0.4 の Version 戦略に対応する後続計画:
+
+- **Plan 2（v0.1 完成 — TUI + tail）:** bubbletea ベースの対話 UI（timeline / diff [累積 read-only] / overview の 3 タブ）、`tail` viewer（fsnotify ベース）、最低限の diff 色分け（追加 / 削除 / context のみ。言語別 HL は v0.3 まで先送り）。**この Plan 完了で v0.1 リリース可能**
+- **Plan 3（v0.2 — Semantic）:** per-turn diff + liveness マーカー、`vs-main` モード、`blame.json` + `liveness.json` の増分更新、line → turn blame footer + intent
+- **Plan 4（v0.3 — Storytelling）:** overview タブ（goal 横断）の本格実装、`narrate` CLI（goal 単位の変更ストーリー Markdown 出力）、chroma による言語別 syntax highlight
+- **Plan 5（配布）:** `examples/`（tmux / fzf / shell パターン）、GitHub Actions CI（Ubuntu + macOS）、Darwin/Linux × amd64/arm64 の GoReleaser、Homebrew tap、リリースワークフロー
+- **v0.4 — Comment Authoring（保留）:** `@<file>` / `@<dir>/` / `/<skill>` / `/<command>` 補完、Markdown プレビュー。spec 付録 B 参照、v0.3 リリース後に再判断
 
 ---
 
-*Plan 1 of 3。`docs/superpowers/specs/2026-04-23-tmux-agent-log-design.md` から `superpowers:writing-plans` で生成。*
+*Plan 1 of 5（v0.1 Phase A）。`docs/superpowers/specs/2026-04-23-tmux-agent-log-design.md` §0.4 / §11.1 から `superpowers:writing-plans` で生成。*
