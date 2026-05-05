@@ -26,6 +26,7 @@ func RunTurnStart(stdin io.Reader) error {
 	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
 		return fmt.Errorf("decode turn_start input: %w", err)
 	}
+
 	if in.SessionID == "" || in.Cwd == "" {
 		return nil
 	}
@@ -41,6 +42,7 @@ func RunTurnStart(stdin io.Reader) error {
 	}
 
 	headSHA := ""
+
 	if meta.GitTracked {
 		if sha, err := git.HeadSHA(in.Cwd); err == nil {
 			headSHA = sha
@@ -50,7 +52,7 @@ func RunTurnStart(stdin io.Reader) error {
 	turn := storage.TurnOpen{
 		ID:                  "turn-" + uuid.NewString(),
 		StartedAt:           time.Now().UTC(),
-		UserPromptPreview:   previewFirstLines(in.Prompt, 400),
+		UserPromptPreview:   promptPreview(in.Prompt, 2, 400),
 		HeadSHAPre:          headSHA,
 		TranscriptMessageID: in.TranscriptMessageID,
 	}

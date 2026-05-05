@@ -1,3 +1,3 @@
 package hook
 
-var PreviewFirstLines = previewFirstLines
+var PromptPreview = promptPreview

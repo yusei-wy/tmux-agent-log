@@ -28,7 +28,8 @@ func TestTurnStartAppendsOpenRecord(t *testing.T) {
 	require.NotEmpty(t, turns[0].HeadSHAPre)
 }
 
-func TestPreviewFirstLinesTruncatesAndLimitsLines(t *testing.T) {
-	require.Equal(t, "line1\nline2", hook.PreviewFirstLines("line1\nline2\nline3", 100))
-	require.Equal(t, "abc…", hook.PreviewFirstLines("abcdef", 3))
+func TestPromptPreview(t *testing.T) {
+	require.Equal(t, "line1\nline2", hook.PromptPreview("line1\nline2\nline3", 2, 100))
+	require.Equal(t, "line1", hook.PromptPreview("line1\nline2\nline3", 1, 100))
+	require.Equal(t, "abc…", hook.PromptPreview("abcdef", 2, 3))
 }
