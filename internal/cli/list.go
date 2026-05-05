@@ -96,7 +96,7 @@ func listTurnsCmd() *cobra.Command {
 				rows = append(rows, []string{
 					t.ID,
 					format.Time(t.StartedAt),
-					format.Time(t.EndedAt),
+					format.TimePtr(t.EndedAt),
 					string(t.Status),
 					t.DiffPath,
 					t.UserPromptPreview,
@@ -143,7 +143,7 @@ func listCommentsCmd() *cobra.Command {
 					strconv.Itoa(c.LineStart),
 					strconv.Itoa(c.LineEnd),
 					c.Text,
-					format.Time(c.SentAt),
+					format.TimePtr(c.SentAt),
 				})
 			}
 			return format.Write(cmd.OutOrStdout(), formatName,

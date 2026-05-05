@@ -9,8 +9,8 @@ import (
 
 type commentRecord struct {
 	Comment
-	Deleted bool      `json:"deleted,omitempty"`
-	SetSent time.Time `json:"set_sent,omitempty"`
+	Deleted bool       `json:"deleted,omitempty"`
+	SetSent *time.Time `json:"set_sent,omitempty"`
 }
 
 func AppendComment(path string, c Comment) error {
@@ -22,7 +22,7 @@ func AppendComment(path string, c Comment) error {
 
 func MarkCommentsSent(path string, ids []string, ts time.Time) error {
 	for _, id := range ids {
-		rec := commentRecord{Comment: Comment{ID: id}, SetSent: ts}
+		rec := commentRecord{Comment: Comment{ID: id}, SetSent: &ts}
 		if err := AppendJSONL(path, rec); err != nil {
 			return fmt.Errorf("mark comment %s sent: %w", id, err)
 		}
@@ -64,7 +64,7 @@ func ReadComments(path string) ([]Comment, error) {
 			idx++
 			c = merged[rec.ID]
 		}
-		if !rec.SetSent.IsZero() {
+		if rec.SetSent != nil {
 			c.SentAt = rec.SetSent
 		}
 		return nil
@@ -93,7 +93,7 @@ func UnsentComments(path string) ([]Comment, error) {
 	}
 	out := make([]Comment, 0, len(all))
 	for _, c := range all {
-		if c.SentAt.IsZero() {
+		if c.SentAt == nil {
 			out = append(out, c)
 		}
 	}

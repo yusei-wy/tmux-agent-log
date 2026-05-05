@@ -55,7 +55,7 @@ func ReadTurns(path string) ([]Turn, error) {
 				t = &Turn{ID: c.ID, Status: TurnStatusOpen}
 				turns[c.ID] = t
 			}
-			t.EndedAt = c.EndedAt
+			t.EndedAt = &c.EndedAt
 			t.AssistantSummaryPreview = c.AssistantSummaryPreview
 			t.HeadSHA = c.HeadSHA
 			t.DiffPath = c.DiffPath

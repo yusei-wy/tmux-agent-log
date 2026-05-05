@@ -62,7 +62,7 @@ func runToolHook(stdin io.Reader, phase storage.EventPhase) error {
 	event := storage.Event{
 		ID:          "evt-" + uuid.NewString(),
 		TurnID:      turnID,
-		Ts:          time.Now().UTC(),
+		TS:          time.Now().UTC(),
 		Tool:        in.ToolName,
 		ArgsPreview: truncate(string(in.ToolInput), 200),
 		Phase:       phase,

@@ -24,7 +24,7 @@ func WriteTurnDiff(sDir, turnID string, content []byte) error {
 	return nil
 }
 
-// ファイル不在は (nil, nil) を返し、呼び出し側が「diff なし」として扱えるようにする。
+// ReadTurnDiff はファイル不在時に (nil, nil) を返す。呼び出し側は「diff なし」として扱える。
 func ReadTurnDiff(sDir, turnID string) ([]byte, error) {
 	path := filepath.Join(sDir, TurnDiffRelPath(turnID))
 	body, err := os.ReadFile(path)

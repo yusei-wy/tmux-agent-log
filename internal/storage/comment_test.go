@@ -27,7 +27,8 @@ func TestMarkCommentSent(t *testing.T) {
 	require.NoError(t, storage.MarkCommentsSent(p, []string{"c1"}, time.Unix(2, 0).UTC()))
 	got, err := storage.ReadComments(p)
 	require.NoError(t, err)
-	require.Equal(t, time.Unix(2, 0).UTC(), got[0].SentAt)
+	require.NotNil(t, got[0].SentAt)
+	require.Equal(t, time.Unix(2, 0).UTC(), *got[0].SentAt)
 }
 
 func TestDeleteComment(t *testing.T) {

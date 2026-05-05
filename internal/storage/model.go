@@ -58,7 +58,7 @@ type TurnClose struct {
 type Turn struct {
 	ID                      string     `json:"id"`
 	StartedAt               time.Time  `json:"started_at"`
-	EndedAt                 time.Time  `json:"ended_at,omitempty"`
+	EndedAt                 *time.Time `json:"ended_at,omitempty"`
 	UserPromptPreview       string     `json:"user_prompt_preview,omitempty"`
 	AssistantSummaryPreview string     `json:"assistant_summary_preview,omitempty"`
 	HeadSHAPre              string     `json:"head_sha_pre,omitempty"`
@@ -72,7 +72,7 @@ type Turn struct {
 type Event struct {
 	ID           string     `json:"id"`
 	TurnID       string     `json:"turn_id"`
-	Ts           time.Time  `json:"ts"`
+	TS           time.Time  `json:"ts"`
 	Tool         string     `json:"tool"`
 	ArgsPreview  string     `json:"args_preview,omitempty"`
 	Phase        EventPhase `json:"phase"`
@@ -81,17 +81,17 @@ type Event struct {
 }
 
 type Comment struct {
-	ID        string    `json:"id"`
-	File      string    `json:"file"`
-	LineStart int       `json:"line_start"`
-	LineEnd   int       `json:"line_end"`
-	Text      string    `json:"text"`
-	CreatedAt time.Time `json:"created_at"`
-	SentAt    time.Time `json:"sent_at,omitempty"`
+	ID        string     `json:"id"`
+	File      string     `json:"file"`
+	LineStart int        `json:"line_start"`
+	LineEnd   int        `json:"line_end"`
+	Text      string     `json:"text"`
+	CreatedAt time.Time  `json:"created_at"`
+	SentAt    *time.Time `json:"sent_at,omitempty"`
 }
 
 type ErrEntry struct {
-	Ts          time.Time `json:"ts"`
+	TS          time.Time `json:"ts"`
 	Component   string    `json:"component"`
 	Event       string    `json:"event"`
 	SessionID   string    `json:"session_id,omitempty"`

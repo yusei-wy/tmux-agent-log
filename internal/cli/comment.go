@@ -101,7 +101,7 @@ func commentListCmd() *cobra.Command {
 			out := cmd.OutOrStdout()
 			for _, c := range comments {
 				flag := ""
-				if !c.SentAt.IsZero() {
+				if c.SentAt != nil {
 					flag = " [sent]"
 				}
 				_, _ = fmt.Fprintf(out, "%s  %s:%d-%d%s\n  %s\n", c.ID, c.File, c.LineStart, c.LineEnd, flag, c.Text)

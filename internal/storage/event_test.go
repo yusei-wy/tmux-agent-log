@@ -20,8 +20,8 @@ func TestReadEvents(t *testing.T) {
 		{
 			name: "matching turn id returns events in append order",
 			events: []storage.Event{
-				{ID: "e1", TurnID: "t1", Ts: time.Unix(1, 0).UTC(), Tool: "Read", Phase: storage.EventPhasePre},
-				{ID: "e2", TurnID: "t1", Ts: time.Unix(2, 0).UTC(), Tool: "Read", Phase: storage.EventPhasePost, Success: true},
+				{ID: "e1", TurnID: "t1", TS: time.Unix(1, 0).UTC(), Tool: "Read", Phase: storage.EventPhasePre},
+				{ID: "e2", TurnID: "t1", TS: time.Unix(2, 0).UTC(), Tool: "Read", Phase: storage.EventPhasePost, Success: true},
 			},
 			filterTurn: "t1",
 			wantIDs:    []string{"e1", "e2"},

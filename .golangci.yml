@@ -24,6 +24,10 @@ linters:
     - unconvert
     - unparam
   settings:
+    staticcheck:
+      checks:
+        - "all"
+        - "-ST1000" # package doc — revive package-comments: disabled と整合
     revive:
       rules:
         - name: var-naming
@@ -34,8 +38,6 @@ linters:
     gocritic:
       disabled-checks:
         - ifElseChain
-        - paramTypeCombine
-        - hugeParam
     gosec:
       excludes:
         - G104

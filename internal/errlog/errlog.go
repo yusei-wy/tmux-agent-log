@@ -17,7 +17,7 @@ func Record(component, event, sessionID, errMsg string) error {
 		return fmt.Errorf("resolve errors path: %w", err)
 	}
 	entry := storage.ErrEntry{
-		Ts:          time.Now().UTC(),
+		TS:          time.Now().UTC(),
 		Component:   component,
 		Event:       event,
 		SessionID:   sessionID,
