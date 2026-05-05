@@ -1,3 +1,4 @@
+// Package format は CLI 出力を tsv / json / table 形式で書き出すユーティリティを提供する。
 package format
 
 import (

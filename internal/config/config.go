@@ -1,3 +1,4 @@
+// Package config はユーザー設定の読み込みとデフォルト値を提供する。
 package config
 
 import (

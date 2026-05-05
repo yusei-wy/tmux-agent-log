@@ -1,3 +1,4 @@
+// Package errlog はフック実行時のエラーを構造化ログとして記録する。
 package errlog
 
 import (

@@ -1,3 +1,4 @@
+// Package cli は cobra ベースのサブコマンド群を定義する。
 package cli
 
 import "github.com/spf13/cobra"

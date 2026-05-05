@@ -1,3 +1,4 @@
+// tmux-agent-log CLI のエントリポイント。
 package main
 
 import (

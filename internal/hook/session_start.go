@@ -1,3 +1,4 @@
+// Package hook は Claude Code のフックイベントを処理し構造化ログに変換する。
 package hook
 
 import (

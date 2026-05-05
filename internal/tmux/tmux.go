@@ -1,3 +1,4 @@
+// Package tmux は tmux セッションの検出とペインへの send-keys を提供する。
 package tmux
 
 import (

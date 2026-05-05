@@ -1,3 +1,4 @@
+// Package git は git コマンドの実行と差分取得を薄くラップする。
 package git
 
 import (

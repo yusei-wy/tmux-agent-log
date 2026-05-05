@@ -1,3 +1,4 @@
+// Package storage はセッション・ターン・コメントの JSONL 永続化を担当する。
 package storage
 
 import "time"
