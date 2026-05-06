@@ -55,9 +55,24 @@ func checkPair(pass *analysis.Pass, file *ast.File, prev, next ast.Stmt) {
 		return
 	}
 
+	editStart := tokenFile.LineStart(prevEndLine + 1)
+	editEnd := tokenFile.LineStart(nextStartLine)
+
 	pass.Report(analysis.Diagnostic{
 		Pos:     next.Pos(),
 		Message: fmt.Sprintf("unnecessary blank line before block using %s", used),
+		SuggestedFixes: []analysis.SuggestedFix{
+			{
+				Message: fmt.Sprintf("Remove blank line before block using %s", used),
+				TextEdits: []analysis.TextEdit{
+					{
+						Pos:     editStart,
+						End:     editEnd,
+						NewText: nil,
+					},
+				},
+			},
+		},
 	})
 }
 
