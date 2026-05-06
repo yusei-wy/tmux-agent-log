@@ -5,4 +5,5 @@ var (
 	ParseDurationWithDays = parseDurationWithDays
 	InstallHooksTo        = installHooksTo
 	UninstallHooksFrom    = uninstallHooksFrom
+	ResolveSettingsPath   = resolveSettingsPath
 )

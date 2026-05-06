@@ -66,3 +66,21 @@ func TestUninstallRemovesOurHooks(t *testing.T) {
 		}
 	}
 }
+
+func TestResolveSettingsPathUser(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	path, err := cli.ResolveSettingsPath("user")
+	require.NoError(t, err)
+	require.Equal(t, filepath.Join(home, ".claude", "settings.json"), path)
+}
+
+func TestResolveSettingsPathProject(t *testing.T) {
+	dir := t.TempDir()
+	t.Chdir(dir)
+
+	path, err := cli.ResolveSettingsPath("project")
+	require.NoError(t, err)
+	require.Equal(t, filepath.Join(dir, ".claude", "settings.json"), path)
+}

@@ -29,13 +29,16 @@ func init() {
 }
 
 func installHooksCmd() *cobra.Command {
-	var dry bool
+	var (
+		dry   bool
+		scope string
+	)
 
 	cmd := &cobra.Command{
 		Use:   "install-hooks",
-		Short: "~/.claude/settings.json に tmux-agent-log hook を追加",
+		Short: "settings.json に tmux-agent-log hook を追加",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			path, err := claudeSettingsPath()
+			path, err := resolveSettingsPath(scope)
 			if err != nil {
 				return fmt.Errorf("resolve claude settings path: %w", err)
 			}
@@ -57,16 +60,19 @@ func installHooksCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().BoolVar(&dry, "dry", false, "書込まずに dry-run")
+	cmd.Flags().StringVar(&scope, "scope", "user", "設定の書き込み先 (user: ~/.claude, project: ./.claude)")
 
 	return cmd
 }
 
 func uninstallHooksCmd() *cobra.Command {
-	return &cobra.Command{
+	var scope string
+
+	cmd := &cobra.Command{
 		Use:   "uninstall-hooks",
 		Short: "settings.json から tmux-agent-log の hook エントリを削除",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			path, err := claudeSettingsPath()
+			path, err := resolveSettingsPath(scope)
 			if err != nil {
 				return fmt.Errorf("resolve claude settings path: %w", err)
 			}
@@ -78,6 +84,9 @@ func uninstallHooksCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().StringVar(&scope, "scope", "user", "設定の書き込み先 (user: ~/.claude, project: ./.claude)")
+
+	return cmd
 }
 
 func resolveBinName() string {
@@ -88,17 +97,29 @@ func resolveBinName() string {
 	return "tmux-agent-log"
 }
 
-func claudeSettingsPath() (string, error) {
-	home := os.Getenv("HOME")
-	if home == "" {
-		return "", errors.New("HOME が設定されていない")
-	}
+func resolveSettingsPath(scope string) (string, error) {
+	switch scope {
+	case "user":
+		home := os.Getenv("HOME")
+		if home == "" {
+			return "", errors.New("HOME が設定されていない")
+		}
 
-	return filepath.Join(home, ".claude", "settings.json"), nil
+		return filepath.Join(home, ".claude", "settings.json"), nil
+	case "project":
+		wd, err := os.Getwd()
+		if err != nil {
+			return "", fmt.Errorf("get working directory: %w", err)
+		}
+
+		return filepath.Join(wd, ".claude", "settings.json"), nil
+	default:
+		return "", fmt.Errorf("unknown scope %q (user or project)", scope)
+	}
 }
 
 func loadSettings(path string) (map[string]any, error) {
-	//nolint:gosec // path は claudeSettingsPath() が組み立てた ~/.claude/settings.json。利用者自身のホーム配下の設定ファイルを読む設計上の意図。
+	//nolint:gosec // path は resolveSettingsPath() が組み立てた .claude/settings.json（user or project）。利用者自身の設定ファイルを読む設計上の意図。
 	body, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
