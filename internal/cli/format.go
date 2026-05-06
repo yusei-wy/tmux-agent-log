@@ -1,5 +1,4 @@
-// Package format は CLI 出力を tsv / json / table 形式で書き出すユーティリティを提供する。
-package format
+package cli
 
 import (
 	"bytes"
@@ -8,9 +7,10 @@ import (
 	"io"
 	"strings"
 	"text/tabwriter"
+	"time"
 )
 
-func Write(w io.Writer, fmtName string, columns []string, rows [][]string) error {
+func writeFormatted(w io.Writer, fmtName string, columns []string, rows [][]string) error {
 	switch fmtName {
 	case "tsv":
 		return writeTSV(w, rows)
@@ -102,8 +102,6 @@ func writeJSON(w io.Writer, columns []string, rows [][]string) error {
 	return nil
 }
 
-// buildOrderedJSON は bytes.Buffer に書込むため Write 系のエラーは発生しない。
-// json.Marshal のみ propagate する。
 func buildOrderedJSON(columns []string, row []string) ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteByte('{')
@@ -137,4 +135,39 @@ func buildOrderedJSON(columns []string, row []string) ([]byte, error) {
 	buf.WriteByte('}')
 
 	return buf.Bytes(), nil
+}
+
+// writeJSONIndent は v を 2-space インデントの JSON として書き、末尾に改行を付ける。
+func writeJSONIndent(w io.Writer, v any) error {
+	body, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal json: %w", err)
+	}
+
+	if _, err := w.Write(body); err != nil {
+		return fmt.Errorf("write json: %w", err)
+	}
+
+	if _, err := w.Write([]byte{'\n'}); err != nil {
+		return fmt.Errorf("write json newline: %w", err)
+	}
+
+	return nil
+}
+
+// formatTime は表示用に時刻を UTC の "YYYY-MM-DD HH:MM:SS" で整形する。zero 値は空文字。
+func formatTime(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+
+	return t.UTC().Format("2006-01-02 15:04:05")
+}
+
+func formatTimePtr(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+
+	return formatTime(*t)
 }

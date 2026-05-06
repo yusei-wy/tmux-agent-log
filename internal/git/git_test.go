@@ -11,6 +11,44 @@ import (
 	"github.com/yusei-wy/tmux-agent-log/internal/git"
 )
 
+func TestIsRepoReturnsFalseForNonRepo(t *testing.T) {
+	ok, err := git.IsRepo(t.TempDir())
+	require.NoError(t, err)
+	require.False(t, ok)
+}
+
+func TestIsRepoReturnsTrueForRepo(t *testing.T) {
+	dir := t.TempDir()
+	require.NoError(t, exec.Command("git", "-C", dir, "init").Run())
+	ok, err := git.IsRepo(dir)
+	require.NoError(t, err)
+	require.True(t, ok)
+}
+
+func TestHeadSHAOfFreshRepoIsEmpty(t *testing.T) {
+	dir := t.TempDir()
+	require.NoError(t, exec.Command("git", "-C", dir, "init").Run())
+	sha, err := git.HeadSHA(dir)
+	require.NoError(t, err)
+	require.Equal(t, "", sha)
+}
+
+func TestHeadSHAAfterCommit(t *testing.T) {
+	dir := t.TempDir()
+	for _, args := range [][]string{
+		{"init"},
+		{"config", "user.email", "a@b"},
+		{"config", "user.name", "a"},
+		{"commit", "--allow-empty", "-m", "x"},
+	} {
+		require.NoError(t, exec.Command("git", append([]string{"-C", dir}, args...)...).Run())
+	}
+
+	sha, err := git.HeadSHA(dir)
+	require.NoError(t, err)
+	require.Len(t, sha, 40)
+}
+
 func setupRepo(t *testing.T) string {
 	t.Helper()
 
@@ -29,7 +67,7 @@ func setupRepo(t *testing.T) string {
 func TestDiffSince(t *testing.T) {
 	cases := []struct {
 		name         string
-		setup        func(t *testing.T, dir string) string // returns base SHA passed to DiffSince
+		setup        func(t *testing.T, dir string) string
 		wantContains []string
 	}{
 		{

@@ -11,7 +11,6 @@ var rootCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
-// Execute は cmd/tmux-agent-log/main.go から呼ばれるエントリポイント。
 func Execute() error {
 	return rootCmd.Execute()
 }

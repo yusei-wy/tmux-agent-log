@@ -6,4 +6,8 @@ var (
 	InstallHooksTo        = installHooksTo
 	UninstallHooksFrom    = uninstallHooksFrom
 	ResolveSettingsPath   = resolveSettingsPath
+	WriteFormatted        = writeFormatted
+	WriteJSONIndent       = writeJSONIndent
+	FormatTime            = formatTime
+	FormatTimePtr         = formatTimePtr
 )

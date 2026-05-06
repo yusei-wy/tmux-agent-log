@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/yusei-wy/tmux-agent-log/internal/config"
-	"github.com/yusei-wy/tmux-agent-log/internal/format"
 	"github.com/yusei-wy/tmux-agent-log/internal/storage"
 )
 
@@ -69,14 +68,14 @@ func listSessionsCmd() *cobra.Command {
 						p.Name(),
 						meta.Goal,
 						meta.Cwd,
-						format.Time(meta.StartedAt),
+						formatTime(meta.StartedAt),
 					})
 				}
 			}
 
 			sort.Slice(rows, func(i, j int) bool { return rows[i][4] > rows[j][4] })
 
-			return format.Write(cmd.OutOrStdout(), formatName,
+			return writeFormatted(cmd.OutOrStdout(), formatName,
 				[]string{"session_id", "project", "goal", "cwd", "started_at"}, rows)
 		},
 	}
@@ -110,15 +109,15 @@ func listTurnsCmd() *cobra.Command {
 			for _, t := range turns {
 				rows = append(rows, []string{
 					t.ID,
-					format.Time(t.StartedAt),
-					format.TimePtr(t.EndedAt),
+					formatTime(t.StartedAt),
+					formatTimePtr(t.EndedAt),
 					string(t.Status),
 					t.DiffPath,
 					t.UserPromptPreview,
 				})
 			}
 
-			return format.Write(cmd.OutOrStdout(), formatName,
+			return writeFormatted(cmd.OutOrStdout(), formatName,
 				[]string{"id", "started_at", "ended_at", "status", "diff_path", "prompt_preview"}, rows)
 		},
 	}
@@ -168,11 +167,11 @@ func listCommentsCmd() *cobra.Command {
 					strconv.Itoa(c.LineStart),
 					strconv.Itoa(c.LineEnd),
 					c.Text,
-					format.TimePtr(c.SentAt),
+					formatTimePtr(c.SentAt),
 				})
 			}
 
-			return format.Write(cmd.OutOrStdout(), formatName,
+			return writeFormatted(cmd.OutOrStdout(), formatName,
 				[]string{"id", "file", "line_start", "line_end", "text", "sent_at"}, rows)
 		},
 	}

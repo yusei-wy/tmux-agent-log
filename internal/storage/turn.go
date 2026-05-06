@@ -85,3 +85,42 @@ func ReadTurns(path string) ([]Turn, error) {
 
 	return out, nil
 }
+
+func LatestOpenTurnID(path string) (string, error) {
+	open := []string{}
+	closed := map[string]bool{}
+
+	err := ReadJSONL(path, func(raw []byte) error {
+		var head struct {
+			ID    string    `json:"id"`
+			Phase TurnPhase `json:"phase"`
+		}
+		if err := json.Unmarshal(raw, &head); err != nil {
+			return nil
+		}
+
+		if head.ID == "" {
+			return nil
+		}
+
+		switch head.Phase {
+		case TurnPhaseOpen:
+			open = append(open, head.ID)
+		case TurnPhaseClose:
+			closed[head.ID] = true
+		}
+
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	for i := len(open) - 1; i >= 0; i-- {
+		if !closed[open[i]] {
+			return open[i], nil
+		}
+	}
+
+	return "", nil
+}

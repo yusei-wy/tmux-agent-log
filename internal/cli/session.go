@@ -10,8 +10,6 @@ import (
 	"github.com/yusei-wy/tmux-agent-log/internal/config"
 )
 
-// findSessionDir は state ディレクトリ配下の全プロジェクトを横断して
-// session ID にマッチする state ディレクトリを返す。
 func findSessionDir(sessionID string) (string, error) {
 	state, err := config.StateDir()
 	if err != nil {

@@ -7,7 +7,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/yusei-wy/tmux-agent-log/internal/format"
 	"github.com/yusei-wy/tmux-agent-log/internal/git"
 	"github.com/yusei-wy/tmux-agent-log/internal/storage"
 )
@@ -34,7 +33,7 @@ func showSessionCmd() *cobra.Command {
 				return fmt.Errorf("read session meta: %w", err)
 			}
 
-			return format.JSONIndent(cmd.OutOrStdout(), meta)
+			return writeJSONIndent(cmd.OutOrStdout(), meta)
 		},
 	}
 }
@@ -76,7 +75,7 @@ func showTurnCmd() *cobra.Command {
 				return fmt.Errorf("turn %q が見つからない", args[0])
 			}
 
-			if err := format.JSONIndent(cmd.OutOrStdout(), found); err != nil {
+			if err := writeJSONIndent(cmd.OutOrStdout(), found); err != nil {
 				return fmt.Errorf("write turn json: %w", err)
 			}
 

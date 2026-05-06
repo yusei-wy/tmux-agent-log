@@ -2,6 +2,7 @@
 package errlog
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -39,7 +40,7 @@ func Read() ([]storage.ErrEntry, error) {
 
 	err = storage.ReadJSONL(path, func(raw []byte) error {
 		var e storage.ErrEntry
-		if err := unmarshal(raw, &e); err != nil {
+		if err := json.Unmarshal(raw, &e); err != nil {
 			return nil
 		}
 

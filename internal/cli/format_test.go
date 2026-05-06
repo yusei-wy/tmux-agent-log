@@ -1,22 +1,68 @@
-package format_test
+package cli_test
 
 import (
 	"bytes"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yusei-wy/tmux-agent-log/internal/format"
+	"github.com/yusei-wy/tmux-agent-log/internal/cli"
 )
 
-func TestWrite(t *testing.T) {
+func TestWriteJSONIndent(t *testing.T) {
+	buf := &bytes.Buffer{}
+	require.NoError(t, cli.WriteJSONIndent(buf, struct {
+		Name string `json:"name"`
+		N    int    `json:"n"`
+	}{Name: "alice", N: 1}))
+	require.Equal(t, "{\n  \"name\": \"alice\",\n  \"n\": 1\n}\n", buf.String())
+}
+
+func TestFormatTime(t *testing.T) {
+	jst := time.FixedZone("JST", 9*60*60)
+
+	cases := []struct {
+		name string
+		in   time.Time
+		want string
+	}{
+		{
+			name: "zero value returns empty string",
+			in:   time.Time{},
+			want: "",
+		},
+		{
+			name: "utc input is formatted as-is",
+			in:   time.Date(2026, 4, 30, 12, 34, 56, 0, time.UTC),
+			want: "2026-04-30 12:34:56",
+		},
+		{
+			name: "non-utc input is converted to utc",
+			in:   time.Date(2026, 4, 30, 21, 34, 56, 0, jst),
+			want: "2026-04-30 12:34:56",
+		},
+		{
+			name: "sub-second precision is dropped",
+			in:   time.Date(2026, 4, 30, 12, 34, 56, 999_999_999, time.UTC),
+			want: "2026-04-30 12:34:56",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.want, cli.FormatTime(tc.in))
+		})
+	}
+}
+
+func TestWriteFormatted(t *testing.T) {
 	cases := []struct {
 		name         string
 		format       string
 		columns      []string
 		rows         [][]string
-		want         string   // exact bytes; "" でスキップ
-		wantContains []string // table format のように exact bytes が脆い場合の部分一致
+		want         string
+		wantContains []string
 		wantErr      bool
 	}{
 		{
@@ -59,7 +105,7 @@ func TestWrite(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			buf := &bytes.Buffer{}
 
-			err := format.Write(buf, tc.format, tc.columns, tc.rows)
+			err := cli.WriteFormatted(buf, tc.format, tc.columns, tc.rows)
 			if tc.wantErr {
 				require.Error(t, err)
 				return

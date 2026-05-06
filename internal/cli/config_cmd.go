@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/yusei-wy/tmux-agent-log/internal/config"
-	"github.com/yusei-wy/tmux-agent-log/internal/format"
 )
 
 func init() {
@@ -33,7 +32,7 @@ func configShowCmd() *cobra.Command {
 				return fmt.Errorf("load config: %w", err)
 			}
 
-			return format.JSONIndent(cmd.OutOrStdout(), cfg)
+			return writeJSONIndent(cmd.OutOrStdout(), cfg)
 		},
 	}
 }
