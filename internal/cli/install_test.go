@@ -19,8 +19,10 @@ func TestInstallHooksCreatesSettingsFile(t *testing.T) {
 
 	raw, err := os.ReadFile(target)
 	require.NoError(t, err)
+
 	var settings map[string]any
 	require.NoError(t, json.Unmarshal(raw, &settings))
+
 	hooks := settings["hooks"].(map[string]any)
 	for _, k := range []string{"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"} {
 		_, ok := hooks[k]
@@ -36,6 +38,7 @@ func TestInstallHooksIsIdempotent(t *testing.T) {
 	require.NoError(t, cli.InstallHooksTo(target, "tmux-agent-log"))
 
 	raw, _ := os.ReadFile(target)
+
 	var settings map[string]any
 	require.NoError(t, json.Unmarshal(raw, &settings))
 	hooks := settings["hooks"].(map[string]any)
@@ -50,8 +53,10 @@ func TestUninstallRemovesOurHooks(t *testing.T) {
 	require.NoError(t, cli.UninstallHooksFrom(target, "tmux-agent-log"))
 
 	raw, _ := os.ReadFile(target)
+
 	var settings map[string]any
 	require.NoError(t, json.Unmarshal(raw, &settings))
+
 	hooks, _ := settings["hooks"].(map[string]any)
 	for _, k := range []string{"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"} {
 		arr, _ := hooks[k].([]any)

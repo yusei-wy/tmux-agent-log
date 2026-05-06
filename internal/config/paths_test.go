@@ -28,13 +28,14 @@ func TestStateDir(t *testing.T) {
 			want: "/tmp/myhome/.local/state/tmux-agent-log",
 		},
 	}
-
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("XDG_STATE_HOME", tc.xdg)
+
 			if tc.home != "" {
 				t.Setenv("HOME", tc.home)
 			}
+
 			dir, err := config.StateDir()
 			require.NoError(t, err)
 			require.Equal(t, tc.want, dir)
@@ -59,8 +60,10 @@ func TestProjectSlugAvoidsBaseNameCollision(t *testing.T) {
 
 func TestSessionDir(t *testing.T) {
 	t.Setenv("XDG_STATE_HOME", "/tmp/xdg-state")
+
 	got, err := config.SessionDir("/Users/alias/src/myproject", "abc-123")
 	require.NoError(t, err)
+
 	want := filepath.Join("/tmp/xdg-state/tmux-agent-log/projects", config.ProjectSlug("/Users/alias/src/myproject"), "sessions", "abc-123")
 	require.Equal(t, want, got)
 }

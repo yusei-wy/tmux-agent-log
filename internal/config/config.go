@@ -34,7 +34,6 @@ func Load() (Config, error) {
 	}
 
 	path := filepath.Join(dir, "config.toml")
-
 	if _, err := toml.DecodeFile(path, &cfg); err != nil {
 		if errors.Is(err, fs.ErrNotExist) || os.IsNotExist(err) {
 			return cfg, nil

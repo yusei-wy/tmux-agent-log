@@ -18,8 +18,10 @@ func TestSendKeysToValidPane(t *testing.T) {
 	if _, err := exec.LookPath("tmux"); err != nil {
 		t.Skip("tmux not installed")
 	}
+
 	sock := t.TempDir() + "/tmux.sock"
 	_ = exec.Command("tmux", "-S", sock, "kill-server").Run()
+
 	require.NoError(t, exec.Command("tmux", "-S", sock, "new-session", "-d", "-s", "t", "cat").Run())
 	defer exec.Command("tmux", "-S", sock, "kill-server").Run()
 
@@ -31,6 +33,7 @@ func TestSendKeysToValidPane(t *testing.T) {
 	require.Equal(t, tmux.SendResultOK, res.Kind)
 
 	time.Sleep(100 * time.Millisecond)
+
 	captured, _ := exec.Command("tmux", "-S", sock, "capture-pane", "-t", paneID, "-p").Output()
 	require.Contains(t, string(captured), "hello world")
 }

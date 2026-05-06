@@ -45,19 +45,21 @@ func TestReadEvents(t *testing.T) {
 			wantIDs:    []string{"e1", "e2"},
 		},
 	}
-
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			p := filepath.Join(t.TempDir(), "events.jsonl")
 			for _, e := range tc.events {
 				require.NoError(t, storage.AppendEvent(p, e))
 			}
+
 			got, err := storage.ReadEvents(p, tc.filterTurn)
 			require.NoError(t, err)
+
 			ids := make([]string, len(got))
 			for i, e := range got {
 				ids[i] = e.ID
 			}
+
 			require.Equal(t, tc.wantIDs, ids)
 		})
 	}

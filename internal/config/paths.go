@@ -40,6 +40,7 @@ func ConfigDir() (string, error) {
 func ProjectSlug(cwd string) string {
 	base := strings.ReplaceAll(filepath.Base(cwd), "/", "_")
 	sum := sha256.Sum256([]byte(cwd))
+
 	return base + "-" + hex.EncodeToString(sum[:4])
 }
 

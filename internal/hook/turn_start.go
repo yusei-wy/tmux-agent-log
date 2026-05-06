@@ -42,7 +42,6 @@ func RunTurnStart(stdin io.Reader) error {
 	}
 
 	headSHA := ""
-
 	if meta.GitTracked {
 		if sha, err := git.HeadSHA(in.Cwd); err == nil {
 			headSHA = sha

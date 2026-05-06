@@ -12,11 +12,14 @@ func JSONIndent(w io.Writer, v any) error {
 	if err != nil {
 		return fmt.Errorf("marshal json: %w", err)
 	}
+
 	if _, err := w.Write(body); err != nil {
 		return fmt.Errorf("write json: %w", err)
 	}
+
 	if _, err := w.Write([]byte{'\n'}); err != nil {
 		return fmt.Errorf("write json newline: %w", err)
 	}
+
 	return nil
 }

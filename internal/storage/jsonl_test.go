@@ -22,12 +22,15 @@ func TestAppendAndReadLines(t *testing.T) {
 	require.NoError(t, storage.AppendJSONL(path, sampleRec{ID: "b", Text: "world"}))
 
 	var got []sampleRec
+
 	require.NoError(t, storage.ReadJSONL(path, func(raw []byte) error {
 		var r sampleRec
 		if err := json.Unmarshal(raw, &r); err != nil {
 			return nil
 		}
+
 		got = append(got, r)
+
 		return nil
 	}))
 	require.Equal(t, []sampleRec{{ID: "a", Text: "hello"}, {ID: "b", Text: "world"}}, got)
@@ -41,13 +44,16 @@ func TestReadSkipsCorruptedLines(t *testing.T) {
 
 	good := 0
 	corrupted := 0
+
 	require.NoError(t, storage.ReadJSONL(path, func(raw []byte) error {
 		var r sampleRec
 		if err := json.Unmarshal(raw, &r); err != nil {
 			corrupted++
 			return nil
 		}
+
 		good++
+
 		return nil
 	}))
 	require.Equal(t, 2, good)
@@ -56,17 +62,23 @@ func TestReadSkipsCorruptedLines(t *testing.T) {
 
 func TestConcurrentAppendsSerialize(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "c.jsonl")
+
 	var wg sync.WaitGroup
+
 	const n = 50
 	for range n {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+
 			require.NoError(t, storage.AppendJSONL(path, sampleRec{ID: "x"}))
 		}()
 	}
+
 	wg.Wait()
+
 	total := 0
+
 	require.NoError(t, storage.ReadJSONL(path, func(raw []byte) error { total++; return nil }))
 	require.Equal(t, n, total)
 }
@@ -74,6 +86,7 @@ func TestConcurrentAppendsSerialize(t *testing.T) {
 func TestReadMissingFileReturnsNil(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "missing.jsonl")
 	called := false
+
 	require.NoError(t, storage.ReadJSONL(path, func(raw []byte) error {
 		called = true
 		return nil

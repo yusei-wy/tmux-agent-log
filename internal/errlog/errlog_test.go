@@ -13,6 +13,7 @@ import (
 func TestRecordAndRead(t *testing.T) {
 	t.Setenv("XDG_STATE_HOME", t.TempDir())
 	require.NoError(t, errlog.Record("hook/turn-end", "git-diff-failed", "session-abc", "boom"))
+
 	entries, err := errlog.Read()
 	require.NoError(t, err)
 	require.Len(t, entries, 1)
@@ -27,6 +28,7 @@ func TestClearRemovesFile(t *testing.T) {
 	t.Setenv("XDG_STATE_HOME", dir)
 	require.NoError(t, errlog.Record("c", "e", "s", "err"))
 	require.NoError(t, errlog.Clear())
+
 	_, err := os.Stat(filepath.Join(dir, "tmux-agent-log", "errors.jsonl"))
 	require.True(t, os.IsNotExist(err))
 }

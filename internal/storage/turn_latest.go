@@ -19,15 +19,18 @@ func LatestOpenTurnID(path string) (string, error) {
 		if err := json.Unmarshal(raw, &head); err != nil {
 			return nil
 		}
+
 		if head.ID == "" {
 			return nil
 		}
+
 		switch head.Phase {
 		case TurnPhaseOpen:
 			open = append(open, head.ID)
 		case TurnPhaseClose:
 			closed[head.ID] = true
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -39,5 +42,6 @@ func LatestOpenTurnID(path string) (string, error) {
 			return open[i], nil
 		}
 	}
+
 	return "", nil
 }

@@ -12,5 +12,6 @@ func DiffSince(dir, base string) (string, error) {
 	if untracked, err := Run(dir, "ls-files", "--others", "--exclude-standard"); err == nil && untracked != "" {
 		_, _ = Run(dir, "add", "-N", "--", ".")
 	}
+
 	return Run(dir, "diff", "--no-color", "-U3", base, "--")
 }

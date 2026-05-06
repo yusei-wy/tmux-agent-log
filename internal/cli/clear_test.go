@@ -20,7 +20,6 @@ func TestParseDurationWithDays(t *testing.T) {
 		{name: "stdlib duration", in: "24h", want: 24 * time.Hour},
 		{name: "garbage input returns error", in: "abc", wantErr: true},
 	}
-
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := cli.ParseDurationWithDays(tc.in)
@@ -28,6 +27,7 @@ func TestParseDurationWithDays(t *testing.T) {
 				require.Error(t, err)
 				return
 			}
+
 			require.NoError(t, err)
 			require.Equal(t, tc.want, got)
 		})

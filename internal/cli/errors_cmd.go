@@ -39,7 +39,6 @@ func errorsListCmd() *cobra.Command {
 			}
 
 			out := cmd.OutOrStdout()
-
 			for _, e := range entries {
 				body, err := json.Marshal(e)
 				if err != nil {

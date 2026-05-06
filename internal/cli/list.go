@@ -24,6 +24,7 @@ func init() {
 
 func listSessionsCmd() *cobra.Command {
 	var formatName string
+
 	cmd := &cobra.Command{
 		Use:   "list-sessions",
 		Short: "全プロジェクトの全セッションを列挙する",
@@ -32,6 +33,7 @@ func listSessionsCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("resolve state dir: %w", err)
 			}
+
 			projects := filepath.Join(state, "projects")
 			rows := [][]string{}
 
@@ -39,23 +41,29 @@ func listSessionsCmd() *cobra.Command {
 			if err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return fmt.Errorf("read projects dir %s: %w", projects, err)
 			}
+
 			for _, p := range projEntries {
 				if !p.IsDir() {
 					continue
 				}
+
 				sessDir := filepath.Join(projects, p.Name(), "sessions")
+
 				sessEntries, err := os.ReadDir(sessDir)
 				if err != nil {
 					continue
 				}
+
 				for _, s := range sessEntries {
 					if !s.IsDir() {
 						continue
 					}
+
 					meta, err := storage.ReadSessionMeta(filepath.Join(sessDir, s.Name()))
 					if err != nil {
 						continue
 					}
+
 					rows = append(rows, []string{
 						meta.ClaudeSessionID,
 						p.Name(),
@@ -65,17 +73,21 @@ func listSessionsCmd() *cobra.Command {
 					})
 				}
 			}
+
 			sort.Slice(rows, func(i, j int) bool { return rows[i][4] > rows[j][4] })
+
 			return format.Write(cmd.OutOrStdout(), formatName,
 				[]string{"session_id", "project", "goal", "cwd", "started_at"}, rows)
 		},
 	}
 	cmd.Flags().StringVar(&formatName, "format", "table", "tsv | jsonl | json | table")
+
 	return cmd
 }
 
 func listTurnsCmd() *cobra.Command {
 	var sessionID, formatName string
+
 	cmd := &cobra.Command{
 		Use:   "list-turns",
 		Short: "セッションの turn 一覧",
@@ -83,14 +95,17 @@ func listTurnsCmd() *cobra.Command {
 			if sessionID == "" {
 				return errors.New("--session が必須")
 			}
+
 			sDir, err := findSessionDir(sessionID)
 			if err != nil {
 				return fmt.Errorf("find session dir: %w", err)
 			}
+
 			turns, err := storage.ReadTurns(filepath.Join(sDir, "turns.jsonl"))
 			if err != nil {
 				return fmt.Errorf("read turns: %w", err)
 			}
+
 			rows := make([][]string, 0, len(turns))
 			for _, t := range turns {
 				rows = append(rows, []string{
@@ -102,18 +117,23 @@ func listTurnsCmd() *cobra.Command {
 					t.UserPromptPreview,
 				})
 			}
+
 			return format.Write(cmd.OutOrStdout(), formatName,
 				[]string{"id", "started_at", "ended_at", "status", "diff_path", "prompt_preview"}, rows)
 		},
 	}
 	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID（必須）")
 	cmd.Flags().StringVar(&formatName, "format", "table", "tsv | jsonl | json | table")
+
 	return cmd
 }
 
 func listCommentsCmd() *cobra.Command {
-	var sessionID, formatName string
-	var unsent bool
+	var (
+		sessionID, formatName string
+		unsent                bool
+	)
+
 	cmd := &cobra.Command{
 		Use:   "list-comments",
 		Short: "セッションのコメント一覧",
@@ -121,20 +141,25 @@ func listCommentsCmd() *cobra.Command {
 			if sessionID == "" {
 				return errors.New("--session が必須")
 			}
+
 			sDir, err := findSessionDir(sessionID)
 			if err != nil {
 				return fmt.Errorf("find session dir: %w", err)
 			}
+
 			path := filepath.Join(sDir, "comments.jsonl")
+
 			var comments []storage.Comment
 			if unsent {
 				comments, err = storage.UnsentComments(path)
 			} else {
 				comments, err = storage.ReadComments(path)
 			}
+
 			if err != nil {
 				return fmt.Errorf("read comments %s: %w", path, err)
 			}
+
 			rows := make([][]string, 0, len(comments))
 			for _, c := range comments {
 				rows = append(rows, []string{
@@ -146,6 +171,7 @@ func listCommentsCmd() *cobra.Command {
 					format.TimePtr(c.SentAt),
 				})
 			}
+
 			return format.Write(cmd.OutOrStdout(), formatName,
 				[]string{"id", "file", "line_start", "line_end", "text", "sent_at"}, rows)
 		},
@@ -153,5 +179,6 @@ func listCommentsCmd() *cobra.Command {
 	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID（必須）")
 	cmd.Flags().StringVar(&formatName, "format", "table", "tsv | jsonl | json | table")
 	cmd.Flags().BoolVar(&unsent, "unsent", false, "未送信のみ")
+
 	return cmd
 }

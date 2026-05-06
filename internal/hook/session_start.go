@@ -24,6 +24,7 @@ func RunSessionStart(stdin io.Reader) error {
 	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
 		return fmt.Errorf("decode session_start input: %w", err)
 	}
+
 	if in.SessionID == "" || in.Cwd == "" {
 		return nil
 	}
@@ -40,7 +41,6 @@ func RunSessionStart(stdin io.Reader) error {
 		StartedAt:       time.Now().UTC(),
 		TranscriptPath:  in.TranscriptPath,
 	}
-
 	if isRepo, err := git.IsRepo(in.Cwd); err == nil && isRepo {
 		meta.GitTracked = true
 		if sha, err := git.HeadSHA(in.Cwd); err == nil {

@@ -12,8 +12,10 @@ func IsRepo(dir string) (bool, error) {
 		if errors.As(err, &ge) {
 			return false, nil
 		}
+
 		return false, err
 	}
+
 	return strings.TrimSpace(out) == "true", nil
 }
 
@@ -25,9 +27,12 @@ func HeadSHA(dir string) (string, error) {
 			if strings.Contains(ge.Stderr, "unknown revision") || strings.Contains(ge.Stderr, "ambiguous argument") {
 				return "", nil
 			}
+
 			return "", err
 		}
+
 		return "", err
 	}
+
 	return strings.TrimSpace(out), nil
 }

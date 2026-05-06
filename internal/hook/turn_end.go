@@ -23,6 +23,7 @@ func RunTurnEnd(stdin io.Reader) error {
 	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
 		return fmt.Errorf("decode turn_end input: %w", err)
 	}
+
 	if in.SessionID == "" || in.Cwd == "" {
 		return nil
 	}
@@ -38,6 +39,7 @@ func RunTurnEnd(stdin io.Reader) error {
 	}
 
 	turnsPath := filepath.Join(sDir, "turns.jsonl")
+
 	turns, err := storage.ReadTurns(turnsPath)
 	if err != nil {
 		return fmt.Errorf("read turns %s: %w", turnsPath, err)
@@ -50,6 +52,7 @@ func RunTurnEnd(stdin io.Reader) error {
 			break
 		}
 	}
+
 	if openTurn == nil {
 		return nil
 	}
@@ -59,15 +62,16 @@ func RunTurnEnd(stdin io.Reader) error {
 		EndedAt: time.Now().UTC(),
 		Status:  storage.TurnStatusDone,
 	}
-
 	if meta.GitTracked {
 		diff, err := git.DiffSince(in.Cwd, openTurn.HeadSHAPre)
 		if err == nil && strings.TrimSpace(diff) != "" {
 			if err := storage.WriteTurnDiff(sDir, openTurn.ID, []byte(diff)); err != nil {
 				return fmt.Errorf("write turn diff %s: %w", openTurn.ID, err)
 			}
+
 			close.DiffPath = storage.TurnDiffRelPath(openTurn.ID)
 		}
+
 		if sha, err := git.HeadSHA(in.Cwd); err == nil {
 			close.HeadSHA = sha
 		}

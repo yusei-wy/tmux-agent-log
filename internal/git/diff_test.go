@@ -13,6 +13,7 @@ import (
 
 func setupRepo(t *testing.T) string {
 	t.Helper()
+
 	dir := t.TempDir()
 	for _, c := range [][]string{
 		{"init"},
@@ -21,6 +22,7 @@ func setupRepo(t *testing.T) string {
 	} {
 		require.NoError(t, exec.Command("git", append([]string{"-C", dir}, c...)...).Run())
 	}
+
 	return dir
 }
 
@@ -41,6 +43,7 @@ func TestDiffSince(t *testing.T) {
 				require.NoError(t, os.WriteFile(filepath.Join(dir, "a.txt"), []byte("world\n"), 0o644))
 				require.NoError(t, exec.Command("git", "-C", dir, "add", "a.txt").Run())
 				require.NoError(t, exec.Command("git", "-C", dir, "commit", "-m", "c2").Run())
+
 				return base
 			},
 			wantContains: []string{"-hello", "+world"},
@@ -54,6 +57,7 @@ func TestDiffSince(t *testing.T) {
 				base, err := git.HeadSHA(dir)
 				require.NoError(t, err)
 				require.NoError(t, os.WriteFile(filepath.Join(dir, "a.txt"), []byte("changed\n"), 0o644))
+
 				return base
 			},
 			wantContains: []string{"-hi", "+changed"},
@@ -67,13 +71,13 @@ func TestDiffSince(t *testing.T) {
 			wantContains: []string{"+hello"},
 		},
 	}
-
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			dir := setupRepo(t)
 			base := tc.setup(t, dir)
 			diff, err := git.DiffSince(dir, base)
 			require.NoError(t, err)
+
 			for _, s := range tc.wantContains {
 				require.Contains(t, diff, s)
 			}

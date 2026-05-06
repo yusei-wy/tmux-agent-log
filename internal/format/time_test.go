@@ -38,7 +38,6 @@ func TestTime(t *testing.T) {
 			want: "2026-04-30 12:34:56",
 		},
 	}
-
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			require.Equal(t, tc.want, format.Time(tc.in))

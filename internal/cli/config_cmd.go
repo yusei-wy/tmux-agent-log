@@ -32,6 +32,7 @@ func configShowCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("load config: %w", err)
 			}
+
 			return format.JSONIndent(cmd.OutOrStdout(), cfg)
 		},
 	}
@@ -46,7 +47,9 @@ func configPathCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("resolve config path: %w", err)
 			}
+
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), path)
+
 			return nil
 		},
 	}
@@ -61,9 +64,11 @@ func configEditCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("resolve config path: %w", err)
 			}
+
 			if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 				return fmt.Errorf("create config dir: %w", err)
 			}
+
 			editor := os.Getenv("EDITOR")
 			if editor == "" {
 				editor = "vi"
@@ -72,10 +77,12 @@ func configEditCmd() *cobra.Command {
 			c := exec.Command(editor, path)
 			c.Stdin = os.Stdin
 			c.Stdout = os.Stdout
+
 			c.Stderr = os.Stderr
 			if err := c.Run(); err != nil {
 				return fmt.Errorf("run editor %s: %w", editor, err)
 			}
+
 			return nil
 		},
 	}
@@ -86,5 +93,6 @@ func configFilePath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("resolve config dir: %w", err)
 	}
+
 	return filepath.Join(dir, "config.toml"), nil
 }

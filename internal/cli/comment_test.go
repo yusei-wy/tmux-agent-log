@@ -21,7 +21,6 @@ func TestParseCommentLineRange(t *testing.T) {
 		{name: "end before start returns error", in: "46-44", wantErr: true},
 		{name: "non-numeric returns error", in: "abc", wantErr: true},
 	}
-
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			s, e, err := cli.ParseCommentLineRange(tc.in)
@@ -29,6 +28,7 @@ func TestParseCommentLineRange(t *testing.T) {
 				require.Error(t, err)
 				return
 			}
+
 			require.NoError(t, err)
 			require.Equal(t, tc.start, s)
 			require.Equal(t, tc.end, e)

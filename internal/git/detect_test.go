@@ -41,6 +41,7 @@ func TestHeadSHAAfterCommit(t *testing.T) {
 	} {
 		require.NoError(t, exec.Command("git", append([]string{"-C", dir}, args...)...).Run())
 	}
+
 	sha, err := git.HeadSHA(dir)
 	require.NoError(t, err)
 	require.Len(t, sha, 40)

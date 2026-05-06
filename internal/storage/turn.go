@@ -26,6 +26,7 @@ func ReadTurns(path string) ([]Turn, error) {
 		if err := json.Unmarshal(raw, &head); err != nil {
 			return nil
 		}
+
 		if head.ID == "" {
 			return nil
 		}
@@ -36,11 +37,13 @@ func ReadTurns(path string) ([]Turn, error) {
 			if err := json.Unmarshal(raw, &o); err != nil {
 				return nil
 			}
+
 			t, ok := turns[o.ID]
 			if !ok {
 				t = &Turn{ID: o.ID, Status: TurnStatusOpen}
 				turns[o.ID] = t
 			}
+
 			t.StartedAt = o.StartedAt
 			t.UserPromptPreview = o.UserPromptPreview
 			t.HeadSHAPre = o.HeadSHAPre
@@ -50,11 +53,13 @@ func ReadTurns(path string) ([]Turn, error) {
 			if err := json.Unmarshal(raw, &c); err != nil {
 				return nil
 			}
+
 			t, ok := turns[c.ID]
 			if !ok {
 				t = &Turn{ID: c.ID, Status: TurnStatusOpen}
 				turns[c.ID] = t
 			}
+
 			t.EndedAt = &c.EndedAt
 			t.AssistantSummaryPreview = c.AssistantSummaryPreview
 			t.HeadSHA = c.HeadSHA
@@ -62,6 +67,7 @@ func ReadTurns(path string) ([]Turn, error) {
 			t.Status = c.Status
 			t.ErrorMessage = c.ErrorMessage
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -72,8 +78,10 @@ func ReadTurns(path string) ([]Turn, error) {
 	for _, t := range turns {
 		out = append(out, *t)
 	}
+
 	sort.Slice(out, func(i, j int) bool {
 		return out[i].StartedAt.Before(out[j].StartedAt)
 	})
+
 	return out, nil
 }

@@ -38,6 +38,7 @@ func runToolHook(stdin io.Reader, phase storage.EventPhase) error {
 	if err := json.NewDecoder(stdin).Decode(&in); err != nil {
 		return fmt.Errorf("decode tool hook input: %w", err)
 	}
+
 	if in.SessionID == "" || in.Cwd == "" {
 		return nil
 	}
@@ -53,8 +54,10 @@ func runToolHook(stdin io.Reader, phase storage.EventPhase) error {
 		if err != nil {
 			return fmt.Errorf("find latest open turn: %w", err)
 		}
+
 		turnID = latest
 	}
+
 	if turnID == "" {
 		return nil
 	}

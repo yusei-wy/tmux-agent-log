@@ -9,6 +9,7 @@ import (
 
 func setupGitRepo(t *testing.T) string {
 	t.Helper()
+
 	dir := t.TempDir()
 	for _, c := range [][]string{
 		{"init"},
@@ -18,5 +19,6 @@ func setupGitRepo(t *testing.T) string {
 	} {
 		require.NoError(t, exec.Command("git", append([]string{"-C", dir}, c...)...).Run())
 	}
+
 	return dir
 }

@@ -34,16 +34,17 @@ func TestLoad(t *testing.T) {
 			wantSendEditor: config.DefaultSendEditorCommand,
 		},
 	}
-
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			dir := t.TempDir()
 			t.Setenv("XDG_CONFIG_HOME", dir)
+
 			if tc.body != "" {
 				path := filepath.Join(dir, "tmux-agent-log", "config.toml")
 				require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
 				require.NoError(t, os.WriteFile(path, []byte(tc.body), 0o600))
 			}
+
 			cfg, err := config.Load()
 			require.NoError(t, err)
 			require.Equal(t, tc.wantSendEditor, cfg.SendEditorCommand)

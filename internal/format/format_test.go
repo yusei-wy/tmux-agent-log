@@ -55,19 +55,22 @@ func TestWrite(t *testing.T) {
 			wantErr: true,
 		},
 	}
-
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			buf := &bytes.Buffer{}
+
 			err := format.Write(buf, tc.format, tc.columns, tc.rows)
 			if tc.wantErr {
 				require.Error(t, err)
 				return
 			}
+
 			require.NoError(t, err)
+
 			if tc.want != "" {
 				require.Equal(t, tc.want, buf.String())
 			}
+
 			for _, s := range tc.wantContains {
 				require.Contains(t, buf.String(), s)
 			}

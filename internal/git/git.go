@@ -22,16 +22,22 @@ func (e *Error) Error() string {
 func Run(dir string, args ...string) (string, error) {
 	full := append([]string{"-C", dir}, args...)
 	cmd := exec.Command("git", full...)
+
 	var stdout, stderr bytes.Buffer
+
 	cmd.Stdout = &stdout
+
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		exitCode := -1
+
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) {
 			exitCode = exitErr.ExitCode()
 		}
+
 		return "", &Error{Args: args, Stderr: stderr.String(), ExitCode: exitCode}
 	}
+
 	return strings.TrimRight(stdout.String(), "\n"), nil
 }

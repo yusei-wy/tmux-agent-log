@@ -38,6 +38,7 @@ func runWithRecover(fn func() error) int {
 		_ = errlog.Record("hook", "error", "", err.Error())
 		_, _ = fmt.Fprintln(os.Stderr, "tmux-agent-log: hook error:", err)
 	}
+
 	return 0
 }
 
@@ -45,7 +46,10 @@ func makeHookCmd(name string, runner func(io.Reader) error) *cobra.Command {
 	return &cobra.Command{
 		Use: name,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			runWithRecover(func() error { return runner(cmd.InOrStdin()) })
+			runWithRecover(func() error {
+				return runner(cmd.InOrStdin())
+			})
+
 			return nil
 		},
 	}

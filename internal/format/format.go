@@ -31,6 +31,7 @@ func writeTSV(w io.Writer, rows [][]string) error {
 			return fmt.Errorf("write tsv row: %w", err)
 		}
 	}
+
 	return nil
 }
 
@@ -39,14 +40,17 @@ func writeTable(w io.Writer, columns []string, rows [][]string) error {
 	if _, err := fmt.Fprintln(tw, strings.Join(columns, "\t")); err != nil {
 		return fmt.Errorf("write table header: %w", err)
 	}
+
 	for _, row := range rows {
 		if _, err := fmt.Fprintln(tw, strings.Join(row, "\t")); err != nil {
 			return fmt.Errorf("write table row: %w", err)
 		}
 	}
+
 	if err := tw.Flush(); err != nil {
 		return fmt.Errorf("flush tabwriter: %w", err)
 	}
+
 	return nil
 }
 
@@ -56,13 +60,16 @@ func writeJSONL(w io.Writer, columns []string, rows [][]string) error {
 		if err != nil {
 			return fmt.Errorf("build jsonl row: %w", err)
 		}
+
 		if _, err := w.Write(line); err != nil {
 			return fmt.Errorf("write jsonl row: %w", err)
 		}
+
 		if _, err := w.Write([]byte{'\n'}); err != nil {
 			return fmt.Errorf("write jsonl newline: %w", err)
 		}
 	}
+
 	return nil
 }
 
@@ -70,23 +77,28 @@ func writeJSON(w io.Writer, columns []string, rows [][]string) error {
 	if _, err := w.Write([]byte{'['}); err != nil {
 		return fmt.Errorf("write json open bracket: %w", err)
 	}
+
 	for i, row := range rows {
 		if i > 0 {
 			if _, err := w.Write([]byte{','}); err != nil {
 				return fmt.Errorf("write json comma: %w", err)
 			}
 		}
+
 		line, err := buildOrderedJSON(columns, row)
 		if err != nil {
 			return fmt.Errorf("build json row: %w", err)
 		}
+
 		if _, err := w.Write(line); err != nil {
 			return fmt.Errorf("write json row: %w", err)
 		}
 	}
+
 	if _, err := w.Write([]byte("]\n")); err != nil {
 		return fmt.Errorf("write json close bracket: %w", err)
 	}
+
 	return nil
 }
 
@@ -95,26 +107,34 @@ func writeJSON(w io.Writer, columns []string, rows [][]string) error {
 func buildOrderedJSON(columns []string, row []string) ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteByte('{')
+
 	for i, col := range columns {
 		if i > 0 {
 			buf.WriteByte(',')
 		}
+
 		k, err := json.Marshal(col)
 		if err != nil {
 			return nil, fmt.Errorf("marshal column %q: %w", col, err)
 		}
+
 		buf.Write(k)
 		buf.WriteByte(':')
+
 		val := ""
 		if i < len(row) {
 			val = row[i]
 		}
+
 		v, err := json.Marshal(val)
 		if err != nil {
 			return nil, fmt.Errorf("marshal value for %q: %w", col, err)
 		}
+
 		buf.Write(v)
 	}
+
 	buf.WriteByte('}')
+
 	return buf.Bytes(), nil
 }

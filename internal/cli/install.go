@@ -30,6 +30,7 @@ func init() {
 
 func installHooksCmd() *cobra.Command {
 	var dry bool
+
 	cmd := &cobra.Command{
 		Use:   "install-hooks",
 		Short: "~/.claude/settings.json に tmux-agent-log hook を追加",
@@ -38,20 +39,25 @@ func installHooksCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("resolve claude settings path: %w", err)
 			}
+
 			bin := resolveBinName()
 			if dry {
 				for _, e := range hookEvents {
 					_, _ = fmt.Fprintf(cmd.OutOrStdout(), "+ %s: %s hook %s\n", e.Event, bin, e.Sub)
 				}
+
 				return nil
 			}
+
 			if err := installHooksTo(path, bin); err != nil {
 				return fmt.Errorf("install hooks: %w", err)
 			}
+
 			return nil
 		},
 	}
 	cmd.Flags().BoolVar(&dry, "dry", false, "書込まずに dry-run")
+
 	return cmd
 }
 
@@ -64,9 +70,11 @@ func uninstallHooksCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("resolve claude settings path: %w", err)
 			}
+
 			if err := uninstallHooksFrom(path, resolveBinName()); err != nil {
 				return fmt.Errorf("uninstall hooks: %w", err)
 			}
+
 			return nil
 		},
 	}
@@ -76,6 +84,7 @@ func resolveBinName() string {
 	if exe, err := os.Executable(); err == nil {
 		return exe
 	}
+
 	return "tmux-agent-log"
 }
 
@@ -84,6 +93,7 @@ func claudeSettingsPath() (string, error) {
 	if home == "" {
 		return "", errors.New("HOME が設定されていない")
 	}
+
 	return filepath.Join(home, ".claude", "settings.json"), nil
 }
 
@@ -94,18 +104,23 @@ func loadSettings(path string) (map[string]any, error) {
 		if errors.Is(err, fs.ErrNotExist) {
 			return map[string]any{}, nil
 		}
+
 		return nil, fmt.Errorf("read claude settings %s: %w", path, err)
 	}
+
 	if len(strings.TrimSpace(string(body))) == 0 {
 		return map[string]any{}, nil
 	}
+
 	var m map[string]any
 	if err := json.Unmarshal(body, &m); err != nil {
 		return nil, fmt.Errorf("parse claude settings %s: %w", path, err)
 	}
+
 	if m == nil {
 		m = map[string]any{}
 	}
+
 	return m, nil
 }
 
@@ -114,16 +129,20 @@ func saveSettings(path string, m map[string]any) error {
 	if err != nil {
 		return fmt.Errorf("marshal claude settings: %w", err)
 	}
+
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return fmt.Errorf("create claude settings dir: %w", err)
 	}
+
 	tmp := path + ".tmp"
 	if err := os.WriteFile(tmp, body, 0o600); err != nil {
 		return fmt.Errorf("write claude settings tmp %s: %w", tmp, err)
 	}
+
 	if err := os.Rename(tmp, path); err != nil {
 		return fmt.Errorf("rename claude settings tmp to %s: %w", path, err)
 	}
+
 	return nil
 }
 
@@ -132,6 +151,7 @@ func installHooksTo(path, bin string) error {
 	if err != nil {
 		return err
 	}
+
 	hooks, _ := settings["hooks"].(map[string]any)
 	if hooks == nil {
 		hooks = map[string]any{}
@@ -139,17 +159,21 @@ func installHooksTo(path, bin string) error {
 
 	for _, e := range hookEvents {
 		cmdStr := bin + " hook " + e.Sub
+
 		list, _ := hooks[e.Event].([]any)
 		if alreadyInstalled(list, bin, e.Sub) {
 			continue
 		}
+
 		list = append(list, map[string]any{
 			"matcher": "*",
 			"command": cmdStr,
 		})
 		hooks[e.Event] = list
 	}
+
 	settings["hooks"] = hooks
+
 	return saveSettings(path, settings)
 }
 
@@ -158,6 +182,7 @@ func uninstallHooksFrom(path, bin string) error {
 	if err != nil {
 		return err
 	}
+
 	hooks, _ := settings["hooks"].(map[string]any)
 	if hooks == nil {
 		return nil
@@ -165,6 +190,7 @@ func uninstallHooksFrom(path, bin string) error {
 
 	for _, e := range hookEvents {
 		list, _ := hooks[e.Event].([]any)
+
 		filtered := list[:0]
 		for _, item := range list {
 			m, ok := item.(map[string]any)
@@ -172,19 +198,24 @@ func uninstallHooksFrom(path, bin string) error {
 				filtered = append(filtered, item)
 				continue
 			}
+
 			cmd, _ := m["command"].(string)
 			if strings.Contains(cmd, bin) {
 				continue
 			}
+
 			filtered = append(filtered, item)
 		}
+
 		if len(filtered) == 0 {
 			delete(hooks, e.Event)
 		} else {
 			hooks[e.Event] = filtered
 		}
 	}
+
 	settings["hooks"] = hooks
+
 	return saveSettings(path, settings)
 }
 
@@ -194,10 +225,12 @@ func alreadyInstalled(list []any, bin, sub string) bool {
 		if !ok {
 			continue
 		}
+
 		cmd, _ := m["command"].(string)
 		if strings.Contains(cmd, bin) && strings.Contains(cmd, sub) {
 			return true
 		}
 	}
+
 	return false
 }
