@@ -24,13 +24,17 @@ goimports -w -local github.com/yusei-wy/tmux-agent-log "${files[@]}"
 {% endraw %}
 '''
 
+[tasks."lint:build"]
+description = "Build custom golangci-lint with cuddlevar"
+run = "golangci-lint custom --destination tools/bin --name custom-gcl"
+
 [tasks.lint]
-description = "Run golangci-lint"
-run = "golangci-lint run"
+description = "Run golangci-lint (custom build with cuddlevar)"
+run = "tools/bin/custom-gcl run"
 
 [tasks."lint:fix"]
-description = "Run golangci-lint with --fix"
-run = "golangci-lint run --fix"
+description = "Run golangci-lint --fix (custom build with cuddlevar)"
+run = "tools/bin/custom-gcl run --fix"
 
 [tasks.test]
 description = "Run all tests"

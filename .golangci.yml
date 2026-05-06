@@ -21,8 +21,12 @@ linters:
     - misspell
     - prealloc
     - revive
+    - nlreturn
     - unconvert
     - unparam
+    - whitespace
+    - wsl_v5
+    - cuddlevar
   settings:
     staticcheck:
       checks:
@@ -41,6 +45,14 @@ linters:
     gosec:
       excludes:
         - G104
+    nlreturn:
+      block-size: 2
+    wsl_v5:
+      allow-whole-block: true
+      cuddle-max-statements: 1
+    custom:
+      cuddlevar:
+        type: module
   exclusions:
     rules:
       - path: _test\.go

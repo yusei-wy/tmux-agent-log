@@ -1,6 +1,7 @@
 # ビルド成果物
 /tmux-agent-log
 /dist/
+/tools/bin/
 
 # Go
 *.test

@@ -1,0 +1,4 @@
+version: v2.12.1
+plugins:
+  - module: github.com/yusei-wy/tmux-agent-log/tools/cuddlevar
+    path: tools/cuddlevar
