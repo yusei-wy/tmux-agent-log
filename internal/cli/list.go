@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -18,7 +17,6 @@ import (
 func init() {
 	rootCmd.AddCommand(listSessionsCmd())
 	rootCmd.AddCommand(listTurnsCmd())
-	rootCmd.AddCommand(listCommentsCmd())
 }
 
 func listSessionsCmd() *cobra.Command {
@@ -123,61 +121,6 @@ func listTurnsCmd() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID（必須）")
 	cmd.Flags().StringVar(&formatName, "format", "table", "tsv | jsonl | json | table")
-
-	return cmd
-}
-
-func listCommentsCmd() *cobra.Command {
-	var (
-		sessionID, formatName string
-		unsent                bool
-	)
-
-	cmd := &cobra.Command{
-		Use:   "list-comments",
-		Short: "セッションのコメント一覧",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if sessionID == "" {
-				return errors.New("--session が必須")
-			}
-
-			sDir, err := findSessionDir(sessionID)
-			if err != nil {
-				return fmt.Errorf("find session dir: %w", err)
-			}
-
-			path := filepath.Join(sDir, "comments.jsonl")
-
-			var comments []storage.Comment
-			if unsent {
-				comments, err = storage.UnsentComments(path)
-			} else {
-				comments, err = storage.ReadComments(path)
-			}
-
-			if err != nil {
-				return fmt.Errorf("read comments %s: %w", path, err)
-			}
-
-			rows := make([][]string, 0, len(comments))
-			for _, c := range comments {
-				rows = append(rows, []string{
-					c.ID,
-					c.File,
-					strconv.Itoa(c.LineStart),
-					strconv.Itoa(c.LineEnd),
-					c.Text,
-					formatTimePtr(c.SentAt),
-				})
-			}
-
-			return writeFormatted(cmd.OutOrStdout(), formatName,
-				[]string{"id", "file", "line_start", "line_end", "text", "sent_at"}, rows)
-		},
-	}
-	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID（必須）")
-	cmd.Flags().StringVar(&formatName, "format", "table", "tsv | jsonl | json | table")
-	cmd.Flags().BoolVar(&unsent, "unsent", false, "未送信のみ")
 
 	return cmd
 }

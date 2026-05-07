@@ -16,11 +16,11 @@ func init() {
 		Use:   "hook",
 		Short: "Claude Code hook エンドポイント（agent から呼ばれる、人間は直接使わない）",
 	}
-	hookCmd.AddCommand(makeHookCmd("session-start", hook.RunSessionStart))
-	hookCmd.AddCommand(makeHookCmd("turn-start", hook.RunTurnStart))
-	hookCmd.AddCommand(makeHookCmd("tool-pre", hook.RunToolPre))
-	hookCmd.AddCommand(makeHookCmd("tool-post", hook.RunToolPost))
-	hookCmd.AddCommand(makeHookCmd("turn-end", hook.RunTurnEnd))
+	hookCmd.AddCommand(makeHookCmd("session-start", "セッション開始を記録", hook.RunSessionStart))
+	hookCmd.AddCommand(makeHookCmd("turn-start", "turn 開始を記録", hook.RunTurnStart))
+	hookCmd.AddCommand(makeHookCmd("tool-pre", "ツール実行前の状態を記録", hook.RunToolPre))
+	hookCmd.AddCommand(makeHookCmd("tool-post", "ツール実行後の状態を記録", hook.RunToolPost))
+	hookCmd.AddCommand(makeHookCmd("turn-end", "turn 終了を記録し diff を保存", hook.RunTurnEnd))
 	rootCmd.AddCommand(hookCmd)
 }
 
@@ -42,9 +42,10 @@ func runWithRecover(fn func() error) int {
 	return 0
 }
 
-func makeHookCmd(name string, runner func(io.Reader) error) *cobra.Command {
+func makeHookCmd(name, short string, runner func(io.Reader) error) *cobra.Command {
 	return &cobra.Command{
-		Use: name,
+		Use:   name,
+		Short: short,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			runWithRecover(func() error {
 				return runner(cmd.InOrStdin())

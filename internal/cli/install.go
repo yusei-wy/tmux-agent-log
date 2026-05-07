@@ -59,7 +59,7 @@ func installHooksCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().BoolVar(&dry, "dry", false, "書込まずに dry-run")
+	cmd.Flags().BoolVar(&dry, "dry-run", false, "書き込まずに確認のみ")
 	cmd.Flags().StringVar(&scope, "scope", "user", "設定の書き込み先 (user: ~/.claude, project: ./.claude)")
 
 	return cmd

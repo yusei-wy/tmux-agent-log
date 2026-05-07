@@ -75,18 +75,18 @@ func commentAddCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID")
-	cmd.Flags().StringVar(&file, "file", "", "ファイルパス")
-	cmd.Flags().StringVar(&line, "line", "", "行番号 / 範囲（例: 44 / 44-46）")
-	cmd.Flags().StringVar(&text, "text", "", "コメント本文")
+	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID（必須）")
+	cmd.Flags().StringVar(&file, "file", "", "ファイルパス（必須）")
+	cmd.Flags().StringVar(&line, "line", "", "行番号 / 範囲（例: 44 / 44-46）（必須）")
+	cmd.Flags().StringVar(&text, "text", "", "コメント本文（必須）")
 
 	return cmd
 }
 
 func commentListCmd() *cobra.Command {
 	var (
-		sessionID string
-		unsent    bool
+		sessionID, formatName string
+		unsent                bool
 	)
 
 	cmd := &cobra.Command{
@@ -113,20 +113,24 @@ func commentListCmd() *cobra.Command {
 				return fmt.Errorf("read comments %s: %w", path, err)
 			}
 
-			out := cmd.OutOrStdout()
+			rows := make([][]string, 0, len(comments))
 			for _, c := range comments {
-				flag := ""
-				if c.SentAt != nil {
-					flag = " [sent]"
-				}
-
-				_, _ = fmt.Fprintf(out, "%s  %s:%d-%d%s\n  %s\n", c.ID, c.File, c.LineStart, c.LineEnd, flag, c.Text)
+				rows = append(rows, []string{
+					c.ID,
+					c.File,
+					strconv.Itoa(c.LineStart),
+					strconv.Itoa(c.LineEnd),
+					c.Text,
+					formatTimePtr(c.SentAt),
+				})
 			}
 
-			return nil
+			return writeFormatted(cmd.OutOrStdout(), formatName,
+				[]string{"id", "file", "line_start", "line_end", "text", "sent_at"}, rows)
 		},
 	}
-	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID")
+	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID（必須）")
+	cmd.Flags().StringVar(&formatName, "format", "table", "tsv | jsonl | json | table")
 	cmd.Flags().BoolVar(&unsent, "unsent", false, "未送信のみ")
 
 	return cmd
@@ -156,7 +160,7 @@ func commentDeleteCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID")
+	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID（必須）")
 
 	return cmd
 }
@@ -232,7 +236,7 @@ func commentSendCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID")
+	cmd.Flags().StringVar(&sessionID, "session", "", "セッション ID（必須）")
 	cmd.Flags().BoolVar(&preview, "preview", false, "送信せずにプロンプトのみ表示")
 
 	return cmd
